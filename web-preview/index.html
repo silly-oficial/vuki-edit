@@ -1,20 +1,10 @@
 <!doctype html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Vuki Edit • Web Preview</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div class="phone">
-<header><button class="icon" aria-label="Voltar">‹</button><div class="project"><strong>Vuki Edit</strong><small>Preview Web • salvo</small></div><button class="icon">⚙</button><button class="export">Exportar</button></header>
-<main>
-<section class="monitor"><div class="stage"><div class="logo">VUKI</div><span>Prévia do vídeo</span></div></section>
-<section class="transport"><span>00:00.0 / 00:15.0</span><div><button>↶</button><button id="play" class="play">▶</button><button>↷</button></div></section>
-<section class="timeline"><div class="ruler">00:00　 00:05　 00:10　 00:15</div><div class="track"><div class="clip selected">🎬 vídeo.mp4</div></div><div class="track audio"><div class="clip">♫ áudio</div></div><div class="needle"></div></section>
-</main>
-<nav id="toolbar"></nav>
-</div>
-<div id="sheet" class="sheet hidden"><div class="grab"></div><div class="sheet-head"><strong id="sheetTitle">Mais</strong><button id="close">✕</button></div><div id="sheetBody" class="grid"></div></div>
-<script src="app.js"></script>
-</body></html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#fffaf4"><title>Vuki Edit • Studio</title><link rel="stylesheet" href="style.css"></head>
+<body><div class="phone">
+<header><button class="round">×</button><div class="project"><strong>Meu vídeo</strong><small>Vuki Edit • salvo</small></div><div class="head-actions"><button class="round">↶</button><button class="round">↷</button><button class="export">Exportar ↗</button></div></header>
+<main><section class="monitor"><div class="canvas"><div class="art"><span class="orb one"></span><span class="orb two"></span><strong>CREATE<br><i>YOUR</i> STORY</strong><small>VUKI EDIT</small></div></div><div class="floating"><button>▣</button><button>☰</button><button>⛶</button></div></section>
+<section class="transport"><div class="time"><b>00:02</b><span>/ 00:15</span></div><div class="player"><button>◀</button><button id="play" class="play">▶</button><button>▶</button></div><button class="fit">⌄</button></section>
+<section class="timeline"><div class="ruler">00:00　　00:05　　00:10　　00:15</div><div class="track video"><div class="clip selected"><div class="thumbs"><i></i><i></i><i></i><i></i><i></i></div><span>vídeo.mp4</span></div></div><div class="track audio"><button class="audio-add">♫</button><div class="clip sound"><div class="wave">▂▅▃▇▅▂▆▃▅▇▂▅▃▆▂▇▅▃▆▂▅▇▃▅</div><span>Áudio</span></div></div><div class="needle"><i></i></div></section></main>
+<nav id="toolbar"></nav></div>
+<div id="sheet" class="sheet hidden"><div class="grab"></div><div class="sheet-head"><div><small>Ferramentas</small><strong id="sheetTitle">Editar</strong></div><button id="close">×</button></div><div id="sheetBody" class="grid"></div></div>
+<script src="app.js"></script></body></html>
