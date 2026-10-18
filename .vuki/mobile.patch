@@ -1,0 +1,295 @@
+--- a/src/crates/concat/ui/phone/editor.slint
++++ b/src/crates/concat/ui/phone/editor.slint
+@@ -395,6 +395,7 @@
+             : name == "clip-enhance" ? I18n.t("common.enhance")
+             : name == "clip-layer" ? I18n.t("configPane.filter")
+             : name == "clip-mask" ? I18n.t("mask.title")
++            : name == "more-tools" || name == "clip-more" ? I18n.t("phone.more")
+             : "";
+     }
+ 
+@@ -837,13 +838,15 @@
+             width: parent.width;
+             height: parent.height - 1px;
+ 
++            // Keep the everyday creation tools visible. Everything else
++            // lives behind More so the footer reads at a glance instead of
++            // becoming a horizontal scavenger hunt on narrow phones.
+             ToolItem {
+                 glyph: Glyph.film;
+                 label: I18n.t("common.media");
+                 current: root.sheet == "media";
+                 clicked => { root.show("media", false); }
+             }
+-            // Beside Media, as CapCut keeps it: the user's own sounds.
+             ToolItem {
+                 glyph: Glyph.music;
+                 label: I18n.t("common.audio");
+@@ -863,59 +866,10 @@
+                 clicked => { root.show("effects", false); }
+             }
+             ToolItem {
+-                glyph: Glyph.filter;
+-                label: I18n.t("mediaPane.filters");
+-                current: root.sheet == "filters";
+-                clicked => { root.show("filters", false); }
+-            }
+-            // CapCut's Adjust, beside Filters: a layer that grades the
+-            // whole picture beneath it, and the user's LUTs.
+-            ToolItem {
+-                glyph: Glyph.sun;
+-                label: I18n.t("mediaPane.adjustments");
+-                current: root.sheet == "adjustments";
+-                clicked => { root.show("adjustments", false); }
+-            }
+-            ToolItem {
+-                glyph: Glyph.transition;
+-                label: I18n.t("mediaPane.transitions");
+-                current: root.sheet == "transitions";
+-                clicked => { root.show("transitions", false); }
+-            }
+-            ToolItem {
+-                glyph: Glyph.waveform;
+-                label: I18n.t("phone.captions");
+-                clicked => { Editor.captions(); }
+-            }
+-            ToolItem {
+-                glyph: Glyph.volume;
+-                label: I18n.t("phone.speak");
+-                clicked => { Editor.speak(); }
+-            }
+-            // The voiceover panel, which stands at the foot of the screen
+-            // over this bar; the same press puts it away, or stops a take.
+-            ToolItem {
+-                glyph: Glyph.mic;
+-                label: I18n.t("phone.voiceover");
+-                current: Editor.recording;
+-                clicked => {
+-                    root.hide();
+-                    Editor.record-voiceover();
+-                }
+-            }
+-            // What fills a tall frame beside a wide shot, for the whole
+-            // timeline: CapCut's Canvas, where a phone editor keeps it.
+-            ToolItem {
+-                glyph: Glyph.frame;
+-                label: I18n.t("phone.canvas");
+-                current: root.sheet == "canvas";
+-                clicked => { root.show("canvas", false); }
+-            }
+-            ToolItem {
+-                glyph: Glyph.info;
+-                label: I18n.t("phone.project");
+-                current: root.sheet == "project";
+-                clicked => { root.show("project", false); }
++                glyph: Glyph.chevron-up;
++                label: I18n.t("phone.more");
++                current: root.sheet == "more-tools";
++                clicked => { root.show("more-tools", false); }
+             }
+         }
+ 
+@@ -933,164 +887,39 @@
+             ToolItem {
+                 glyph: Glyph.chevron-left;
+                 label: I18n.t("phone.back");
+-                clicked => {
+-                    root.hide();
+-                    Editor.shortcut("deselect");
+-                }
++                clicked => { root.hide(); Editor.shortcut("deselect"); }
+             }
+             ToolItem {
+                 glyph: Glyph.split;
+                 label: I18n.t("phone.split");
+                 clicked => { Editor.shortcut("split-selected"); }
+             }
+-            ToolItem {
+-                glyph: Glyph.trash;
+-                label: I18n.t("common.delete");
+-                clicked => { Editor.delete-selected(); }
+-            }
+             if root.is-picture || root.is-shape: ToolItem {
+                 glyph: Glyph.fit;
+                 label: I18n.t("phone.edit");
+                 current: root.sheet == "clip-video";
+                 clicked => { root.show("clip-video", true); }
+             }
+-            // The clip's own Canvas: Fit and Fill, and its background.
+-            if root.is-picture: ToolItem {
+-                glyph: Glyph.frame;
+-                label: I18n.t("phone.canvas");
+-                current: root.sheet == "clip-canvas";
+-                clicked => { root.show("clip-canvas", true); }
+-            }
+             if root.is-text: ToolItem {
+                 glyph: Glyph.text-mark;
+                 label: I18n.t("common.text");
+                 current: root.sheet == "clip-text";
+                 clicked => { root.show("clip-text", true); }
+             }
+-            if root.is-layer: ToolItem {
+-                glyph: Glyph.filter;
+-                label: I18n.t("configPane.filter");
+-                current: root.sheet == "clip-layer";
+-                clicked => { root.show("clip-layer", true); }
+-            }
+-            // An adjustment layer is graded as a clip is: the same colour
+-            // sheet, and its chain, for everything beneath it.
+-            if root.is-layer: ToolItem {
+-                glyph: Glyph.sun;
+-                label: I18n.t("common.adjust");
+-                current: root.sheet == "clip-adjust";
+-                clicked => { root.show("clip-adjust", true); }
+-            }
+-            if root.is-layer: ToolItem {
+-                glyph: Glyph.sparkle;
+-                label: I18n.t("common.effects");
+-                current: root.sheet == "clip-effects";
+-                clicked => { root.show("clip-effects", true); }
+-            }
+-            if (root.is-video || root.is-audio) && !Editor.selected-clip.batch-volume: ToolItem {
+-                glyph: Glyph.clock;
+-                label: I18n.t("common.speed");
+-                current: root.sheet == "clip-speed";
+-                clicked => { root.show("clip-speed", true); }
+-            }
+             if root.is-video || root.is-audio: ToolItem {
+                 glyph: Glyph.volume;
+                 label: I18n.t("common.audio");
+                 current: root.sheet == "clip-audio";
+                 clicked => { root.show("clip-audio", true); }
+             }
+-            // The desk's Audio › Audio effects: the sound's chain and its
+-            // library on a sheet of their own, not under the level.
+-            if (root.is-video || root.is-audio) && !Editor.selected-clip.batch-volume: ToolItem {
+-                glyph: Glyph.waveform;
+-                label: I18n.t("configPane.audioEffects");
+-                current: root.sheet == "clip-audio-effects";
+-                clicked => { root.show("clip-audio-effects", true); }
+-            }
+-            // CapCut's Mask, on a sheet of its own.
+-            if root.is-picture: ToolItem {
+-                glyph: Glyph.mask-circle;
+-                label: I18n.t("mask.title");
+-                current: root.sheet == "clip-mask";
+-                clicked => { root.show("clip-mask", true); }
+-            }
+-            if root.is-picture: ToolItem {
+-                glyph: Glyph.sun;
+-                label: I18n.t("common.adjust");
+-                current: root.sheet == "clip-adjust";
+-                clicked => { root.show("clip-adjust", true); }
+-            }
+-            // The desk's Video > Enhance, on a sheet of its own: the same
+-            // panel, settings, preview and all.
+-            if root.is-picture: ToolItem {
+-                glyph: Glyph.maximize;
+-                label: I18n.t("common.enhance");
+-                current: root.sheet == "clip-enhance";
+-                clicked => { root.show("clip-enhance", true); }
+-            }
+-            if root.is-picture || root.is-text: ToolItem {
+-                glyph: Glyph.sparkle;
+-                label: I18n.t("common.effects");
+-                current: root.sheet == "clip-effects";
+-                clicked => { root.show("clip-effects", true); }
+-            }
+-            if root.is-picture: ToolItem {
+-                glyph: Glyph.transition;
+-                label: I18n.t("mediaPane.transitions");
+-                current: root.sheet == "transitions";
+-                clicked => { root.show("transitions", true); }
+-            }
+-            ToolItem {
+-                glyph: Glyph.copy;
+-                label: I18n.t("phone.duplicate");
+-                clicked => { Editor.shortcut("duplicate"); }
+-            }
+-            if root.is-picture: ToolItem {
+-                glyph: Glyph.frame;
+-                label: I18n.t("timelinePane.freeze");
+-                enabled: Editor.freezable;
+-                clicked => { Editor.shortcut("freeze"); }
+-            }
+-            if root.is-video || root.is-audio: ToolItem {
+-                glyph: Glyph.reverse;
+-                label: I18n.t("common.reverse");
+-                enabled: Editor.reversible;
+-                clicked => { Editor.shortcut("reverse"); }
+-            }
+-            if root.is-picture || root.is-shape: ToolItem {
+-                glyph: Glyph.flip-h;
+-                label: I18n.t("timelinePane.mirror");
+-                enabled: Editor.picture-selected;
+-                clicked => { Editor.shortcut("mirror"); }
+-            }
+-            if root.is-picture || root.is-shape: ToolItem {
+-                glyph: Glyph.rotate;
+-                label: I18n.t("timelinePane.rotate");
+-                enabled: Editor.picture-selected;
+-                clicked => { Editor.shortcut("rotate"); }
+-            }
+-            if Editor.sound-selected: ToolItem {
+-                glyph: Glyph.waveform;
+-                label: I18n.t("phone.captions");
+-                clicked => { Editor.captions(); }
+-            }
+-            if Editor.title-selected: ToolItem {
+-                glyph: Glyph.volume;
+-                label: I18n.t("phone.speak");
+-                clicked => { Editor.speak(); }
+-            }
+-            // The rest of the clip's menu - copy, paste, its sound taken
+-            // off its picture - as the menu itself, hung over the bar.
+             ToolItem {
+                 glyph: Glyph.chevron-up;
+                 label: I18n.t("phone.more");
+-                clicked => {
+-                    more-menu.request-x = self.absolute-position.x - root.absolute-position.x;
+-                    more-menu.request-y = root.height - 74px;
+-                    Editor.clip-context(Editor.selected-clip.id);
+-                }
++                current: root.sheet == "clip-more";
++                clicked => { root.show("clip-more", true); }
+             }
+         }
++
+     }
+ 
+     // ── the sheet ───────────────────────────────────────────────────────
+@@ -1109,6 +938,34 @@
+         closed => { root.hide(); }
+ 
+         // ── the bin ──
++        if root.sheet == "more-tools": VerticalLayout {
++            spacing: 8px;
++            SheetNote { text: I18n.t("phone.more"); }
++            SheetButton { glyph: Glyph.filter; label: I18n.t("mediaPane.filters"); clicked => { root.show("filters", false); } }
++            SheetButton { glyph: Glyph.sun; label: I18n.t("mediaPane.adjustments"); clicked => { root.show("adjustments", false); } }
++            SheetButton { glyph: Glyph.transition; label: I18n.t("mediaPane.transitions"); clicked => { root.show("transitions", false); } }
++            SheetButton { glyph: Glyph.waveform; label: I18n.t("phone.captions"); clicked => { root.hide(); Editor.captions(); } }
++            SheetButton { glyph: Glyph.volume; label: I18n.t("phone.speak"); clicked => { root.hide(); Editor.speak(); } }
++            SheetButton { glyph: Glyph.mic; label: I18n.t("phone.voiceover"); clicked => { root.hide(); Editor.record-voiceover(); } }
++            SheetButton { glyph: Glyph.frame; label: I18n.t("phone.canvas"); clicked => { root.show("canvas", false); } }
++            SheetButton { glyph: Glyph.info; label: I18n.t("phone.project"); clicked => { root.show("project", false); } }
++        }
++
++        if root.sheet == "clip-more": VerticalLayout {
++            spacing: 8px;
++            if root.is-picture: SheetButton { glyph: Glyph.frame; label: I18n.t("phone.canvas"); clicked => { root.show("clip-canvas", true); } }
++            if root.is-layer: SheetButton { glyph: Glyph.filter; label: I18n.t("configPane.filter"); clicked => { root.show("clip-layer", true); } }
++            if root.is-picture: SheetButton { glyph: Glyph.sun; label: I18n.t("common.adjust"); clicked => { root.show("clip-adjust", true); } }
++            if root.is-picture: SheetButton { glyph: Glyph.maximize; label: I18n.t("common.enhance"); clicked => { root.show("clip-enhance", true); } }
++            if root.is-picture || root.is-text: SheetButton { glyph: Glyph.sparkle; label: I18n.t("common.effects"); clicked => { root.show("clip-effects", true); } }
++            if (root.is-video || root.is-audio) && !Editor.selected-clip.batch-volume: SheetButton { glyph: Glyph.clock; label: I18n.t("common.speed"); clicked => { root.show("clip-speed", true); } }
++            if (root.is-video || root.is-audio) && !Editor.selected-clip.batch-volume: SheetButton { glyph: Glyph.waveform; label: I18n.t("configPane.audioEffects"); clicked => { root.show("clip-audio-effects", true); } }
++            if root.is-picture: SheetButton { glyph: Glyph.mask-circle; label: I18n.t("mask.title"); clicked => { root.show("clip-mask", true); } }
++            if root.is-picture: SheetButton { glyph: Glyph.transition; label: I18n.t("mediaPane.transitions"); clicked => { root.show("transitions", true); } }
++            SheetButton { glyph: Glyph.copy; label: I18n.t("phone.duplicate"); clicked => { root.hide(); Editor.shortcut("duplicate"); } }
++            SheetButton { glyph: Glyph.trash; label: I18n.t("common.delete"); clicked => { root.hide(); Editor.delete-selected(); } }
++        }
++
+         if root.sheet == "media": VerticalLayout {
+             padding: 12px;
+             spacing: 12px;

@@ -1,0 +1,32 @@
+name: Aplicar interface Vuki Edit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.vuki/mobile.patch'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  aplicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Aplicar interface mobile simplificada
+        run: |
+          git apply .vuki/mobile.patch
+          rm -f .vuki/mobile.patch
+          rmdir .vuki 2>/dev/null || true
+          rm -f .github/workflows/aplicar-vuki.yml
+      - name: Salvar alteracoes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'feat: simplificar interface mobile do Vuki Edit'
+          git push origin HEAD:main
