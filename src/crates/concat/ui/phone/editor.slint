@@ -1111,11 +1111,14 @@ export component PhoneEditor inherits Rectangle {
     // panel bound to the Editor global the way the seats bind it; the
     // library's pages close themselves once something is placed, so what
     // was placed is seen, and the inspector's stay up to be worked in.
+    // Keep the monitor, transport and category bar available during edits.
+    // Panels replace only the lanes; their own scroll handles longer controls.
     PhoneSheet {
         x: 0;
-        y: 0;
+        y: root.lanes-y;
         width: root.width;
-        height: root.height;
+        height: root.lanes-h;
+        sheet-height: root.lanes-h;
         open: root.sheet != "";
         title: root.sheet-title(root.sheet);
         closed => { root.hide(); }
