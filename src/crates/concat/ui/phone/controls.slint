@@ -32,14 +32,16 @@ export component RoundButton inherits Rectangle {
 
     callback clicked();
 
+    accessible-role: button;
+    accessible-label: root.label;
     width: root.size;
     height: root.size;
     border-radius: root.size / 2;
     opacity: root.enabled ? 1.0 : 0.35;
     background: root.accent
-        ? (touch.pressed ? Theme.accent-hover : Theme.accent)
+        ? (touch.pressed ? Theme.phone-action.darker(0.12) : Theme.phone-action)
         : touch.pressed ? Theme.field-active
-        : Colors.transparent;
+        : Theme.phone-glass;
 
     animate background { duration: 100ms; easing: cubic-bezier(0.4, 0, 0.2, 1); }
 
@@ -48,7 +50,7 @@ export component RoundButton inherits Rectangle {
         y: (parent.height - self.height) / 2;
         glyph: root.glyph;
         size: root.icon-size;
-        tint: root.accent ? Theme.on-accent : Theme.fg;
+        tint: root.accent ? Theme.phone-on-action : Theme.fg;
     }
 
     touch := TouchArea {
@@ -91,9 +93,9 @@ export component ToolItem inherits Rectangle {
     callback clicked();
 
     width: 68px;
-    border-radius: Theme.r;
+    border-radius: 16px;
     opacity: root.enabled ? 1.0 : 0.35;
-    background: touch.pressed ? Theme.field-active : Colors.transparent;
+    background: touch.pressed ? Theme.field-active : root.current ? Theme.accent-soft : Colors.transparent;
 
     animate background { duration: 100ms; easing: cubic-bezier(0.4, 0, 0.2, 1); }
 

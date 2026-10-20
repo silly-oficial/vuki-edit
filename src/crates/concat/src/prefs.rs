@@ -24,7 +24,7 @@ pub const UI_SCALES: [u32; 6] = [100, 110, 125, 150, 175, 200];
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct Preferences {
-    /// The dark theme. `None` is the app's default, which is dark.
+    /// The dark theme. `None` defaults to light on phones and dark on desktop.
     pub dark: Option<bool>,
     /// The parent folder of the last project created successfully.
     pub last_project_location: Option<String>,

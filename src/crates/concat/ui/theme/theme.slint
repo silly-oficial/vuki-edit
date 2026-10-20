@@ -285,6 +285,17 @@ export global Theme {
     out property <color> page: dark ? Dark.page : Light.page;
     out property <color> page-fg-muted: dark ? Dark.page-fg-muted : Light.page-fg-muted;
 
+    // Vuki phone materials: translucent surfaces over a soft atmosphere.
+    // Opaque colour fallbacks keep the native renderer legible without blur.
+    out property <color> phone-glass: dark ? #252832ed : #ffffffed;
+    out property <color> phone-edge: dark ? #ffffff24 : #ffffffcc;
+    out property <color> phone-action: dark ? #f5f5f7 : #18242e;
+    out property <color> phone-on-action: dark ? #18242e : #ffffff;
+    out property <color> phone-tint: dark ? #273443 : #e5eef7;
+    out property <color> phone-atmosphere: dark ? #181e2a : #e3eaf3;
+    out property <length> phone-card: 26px;
+    out property <length> phone-sheet: 32px;
+
     // ── content ──────────────────────────────────────────────────────────
     //
     // Colours the *edit* can be made of, as opposed to the interface — and the

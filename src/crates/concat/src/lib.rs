@@ -286,7 +286,8 @@ fn start(project: Option<std::path::PathBuf>, smoke: bool) -> Result<(), slint::
     }
     studio.reload_packages(false);
     studio.watch_packages();
-    let dark = studio.prefs.dark.unwrap_or(true);
+    // A fresh phone install opens in the light Vuki style; saved choices win.
+    let dark = studio.prefs.dark.unwrap_or(!phone);
     app.global::<Theme>().set_dark(dark);
     // The accent is remembered by name and the names live on the Theme
     // global, so the index is looked up there rather than kept in Rust too.
@@ -305,7 +306,11 @@ fn start(project: Option<std::path::PathBuf>, smoke: bool) -> Result<(), slint::
                 let index = studio
                     .prefs
                     .accent_index(slint::Model::iter(&names).map(|name| name.to_string()));
-                theme.set_accent_choice(index as i32);
+                theme.set_accent_choice(if phone && studio.prefs.accent.is_none() {
+                    1
+                } else {
+                    index as i32
+                });
             }
         }
     }
