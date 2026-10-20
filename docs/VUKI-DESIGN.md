@@ -70,3 +70,12 @@ Validation: source-format module tests cover portrait, landscape, square,
 fractional rates, stills, malformed rates, oversized sources and even dimensions.
 Full Slint tree is compiled locally. Android picker, decoding and export require
 validation in the generated APK; no full mobile validation is claimed here.
+
+Final local evidence: all 150 concat-project tests passed and all three source
+format tests passed. Native Slint views were rendered with the software renderer
+at 420×880 and 320×640 using the bundled sample photograph. Home, main editor,
+thumbnail lane, horizontal tool overflow and preview space were inspected.
+The transport's upper row now has its own 44px container, keeping its hit areas
+separate from play/frame-step controls. Skia-specific shadow appearance and the
+real Android picker/export remain NOT VERIFIED locally. Live backdrop blur of
+moving video is not implemented; the native diffuse atmosphere is the fallback.

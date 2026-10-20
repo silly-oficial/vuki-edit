@@ -598,8 +598,12 @@ export component PhoneEditor inherits Rectangle {
         border-top-left-radius: Theme.phone-card;
         border-top-right-radius: Theme.phone-card;
 
-        HorizontalLayout {
+        Rectangle {
+            x: 0;
+            y: 0;
+            width: parent.width;
             height: 44px;
+        HorizontalLayout {
             padding-left: 16px;
             padding-right: 4px;
             spacing: 0px;
@@ -658,6 +662,8 @@ export component PhoneEditor inherits Rectangle {
                     clicked => { Editor.redo(); }
                 }
             }
+        }
+
         }
 
         RoundButton {
