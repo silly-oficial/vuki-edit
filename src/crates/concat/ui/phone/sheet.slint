@@ -46,7 +46,9 @@ export component PhoneSheet inherits Rectangle {
         y: root.height - self.height + root.drag;
         width: root.width - 16px;
         height: root.sheet-height;
-        background: Theme.phone-glass;
+        background: Theme.dark ? #252e3cf5 : #f8fbf3f2;
+        drop-shadow-blur: 24px;
+        drop-shadow-color: Theme.phone-shadow;
         border-top-left-radius: Theme.phone-sheet;
         border-top-right-radius: Theme.phone-sheet;
         border-width: 1px;

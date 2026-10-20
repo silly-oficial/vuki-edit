@@ -47,6 +47,7 @@ export global Theme {
     /// the tree is a property read away from it, so the window retones in a
     /// frame without anything being rebuilt.
     in-out property <bool> dark: true;
+    in-out property <bool> phone: false;
     /// Which of the palettes' accents the accent tokens are read from: an
     /// index into `accent-names`, and into each palette's `accents`.
     /// Settings > Appearance picks it (lib.rs, `on_settings_accent_changed`)
@@ -136,13 +137,13 @@ export global Theme {
     // ── shape ────────────────────────────────────────────────────────────
     //
     // radii
-    out property <length> r-xs: 3px;
-    out property <length> r-sm: 5px;
-    out property <length> r: 7px;
-    out property <length> r-lg: 12px;
+    out property <length> r-xs: phone ? 6px : 3px;
+    out property <length> r-sm: phone ? 10px : 5px;
+    out property <length> r: phone ? 14px : 7px;
+    out property <length> r-lg: phone ? 24px : 12px;
     /// The dialog sheet, and nothing smaller. A modal is the largest rounded
     /// thing in the window and wants a corner to match.
-    out property <length> r-xl: 16px;
+    out property <length> r-xl: phone ? 32px : 16px;
 
     // metrics
     out property <length> h: 28px;        // standard control height
@@ -287,12 +288,13 @@ export global Theme {
 
     // Vuki phone materials: translucent surfaces over a soft atmosphere.
     // Opaque colour fallbacks keep the native renderer legible without blur.
-    out property <color> phone-glass: dark ? #252832ed : #ffffffed;
+    out property <color> phone-glass: dark ? #252e3cdd : #ffffffb8;
     out property <color> phone-edge: dark ? #ffffff24 : #ffffffcc;
     out property <color> phone-action: dark ? #f5f5f7 : #18242e;
     out property <color> phone-on-action: dark ? #18242e : #ffffff;
-    out property <color> phone-tint: dark ? #273443 : #e5eef7;
+    out property <color> phone-tint: dark ? #273443 : #e6edd5;
     out property <color> phone-atmosphere: dark ? #181e2a : #e3eaf3;
+    out property <color> phone-shadow: dark ? #00000030 : #344c7724;
     out property <length> phone-card: 26px;
     out property <length> phone-sheet: 32px;
 

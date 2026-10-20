@@ -43,3 +43,30 @@ Verification for v6:
 - NOT VERIFIED: Safari/iPhone device behavior, final APK/Rust build and native export. Visual inspection is of the web preview, not a native application screenshot. Exact contrast measurement, 200% zoom and screen reader review remain unverified.
 
 The Chromium download limitation in the initial checks was resolved for v6 with an npm-packaged local browser binary. No browser or test dependency is added to the app.
+
+## Native media-first revision — 20 October 2026
+
+The installed phone app is the target of this revision. Home now says Vuki,
+including the Android launcher label and window title. On phone home, New project
+opens the system video/photo picker. Cancellation does not create a project.
+Metadata is read on a worker; unsupported files report an error on home. The first
+valid visual source sets the project dimensions and exact video frame rate;
+photos use 30 fps. Valid selections are added directly in sequence at time zero,
+with the main editor tools available. Existing project settings remain editable.
+
+Design contract (A, adapting Skyglass §§1, 2, 5, 8 to the user's reference):
+- Home: one primary media action, compact recent projects and collapsed help.
+- Editor: the user's picture is the focus; floated header and bottom tools,
+  progressive 10/14/24/32px phone radii, translucent materials and soft shadows.
+- Cool neutral atmosphere with the reference's pale lime reflection. The SVG
+  radial fields create a diffuse background; this is not live backdrop blur of
+  video pixels. Slint's supported shadows provide elevation on Skia. No effects
+  are applied to the exported media by the interface styling.
+- Empty automatic lanes shrink to 20px on phones; video/image lanes use 88px,
+  audio 60px, other content 44px. Track identities, gestures and editing stay native.
+- Short screens reduce reserved chrome and timeline height to retain a preview.
+
+Validation: source-format module tests cover portrait, landscape, square,
+fractional rates, stills, malformed rates, oversized sources and even dimensions.
+Full Slint tree is compiled locally. Android picker, decoding and export require
+validation in the generated APK; no full mobile validation is claimed here.

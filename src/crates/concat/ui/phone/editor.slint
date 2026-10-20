@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Jareer and Concat contributors
 
+import { Atmosphere } from "atmosphere.slint";
 import { I18n } from "../i18n.slint";
 import { Theme } from "../theme/theme.slint";
 import { Fmt } from "../util.slint";
@@ -398,7 +399,7 @@ export component PhoneEditor inherits Rectangle {
             : "";
     }
 
-    background: @linear-gradient(155deg, Theme.phone-atmosphere, Theme.phone-tint, Theme.page);
+    Atmosphere { }
 
     // Placed rather than laid out. The lanes take a share of the screen's
     // height, and a layout that read the height of the thing it is sizing
@@ -406,23 +407,27 @@ export component PhoneEditor inherits Rectangle {
     // each at a height of its own: the bar and the lanes are measured up
     // from the foot, the top bar and the transport down from the head, and
     // the monitor is what is left between.
-    property <length> top-h: 60px;
+    property <length> top-h: root.height < 640px ? 64px : 76px;
     property <length> transport-h: 100px;
     /// A third of the screen, and never less than a ruler and two lanes.
-    property <length> lanes-h: Math.max(170px, root.height * 0.3);
-    property <length> bar-h: 74px;
+    property <length> lanes-h: Math.max(root.height < 640px ? 140px : 180px, Math.min(260px, root.height * 0.29));
+    property <length> bar-h: root.height < 640px ? 80px : 88px;
     property <length> lanes-y: root.height - root.bar-h - root.lanes-h;
     property <length> transport-y: root.lanes-y - root.transport-h;
 
     // ── the top bar ──────────────────────────────────────────────────
     Rectangle {
-        x: 0;
-        y: 0;
-        width: root.width;
-        height: root.top-h;
+        x: 12px;
+        y: 8px;
+        width: root.width - 24px;
+        height: root.top-h - 16px;
         background: Theme.phone-glass;
-        border-bottom-left-radius: 24px;
-        border-bottom-right-radius: 24px;
+        border-radius: 30px;
+        border-width: 1px;
+        border-color: Theme.phone-edge;
+        drop-shadow-blur: 20px;
+        drop-shadow-offset-y: 6px;
+        drop-shadow-color: Theme.phone-shadow;
 
         HorizontalLayout {
             padding-left: 4px;
@@ -529,6 +534,7 @@ export component PhoneEditor inherits Rectangle {
             border-radius: Theme.phone-card;
             clip: true;
             bare: true;
+            background: Colors.transparent;
 
             output-width: Editor.output-width;
             output-height: Editor.output-height;
@@ -584,9 +590,9 @@ export component PhoneEditor inherits Rectangle {
     property <int> rate: Math.max(1, Math.round(Editor.frame-rate));
 
     Rectangle {
-        x: 0;
+        x: 8px;
         y: root.transport-y;
-        width: root.width;
+        width: root.width - 16px;
         height: root.transport-h;
         background: Theme.phone-glass;
         border-top-left-radius: Theme.phone-card;
@@ -720,7 +726,7 @@ export component PhoneEditor inherits Rectangle {
             y: 0;
             width: parent.width - 16px;
             height: parent.height;
-            background: Theme.panel;
+            background: Theme.phone-glass;
             border-radius: Theme.phone-card;
             clip: true;
 
@@ -825,21 +831,16 @@ export component PhoneEditor inherits Rectangle {
 
     // ── the bar ──────────────────────────────────────────────────────
     Rectangle {
-        x: 0;
-        y: root.height - root.bar-h;
-        width: root.width;
-        height: root.bar-h;
+        x: 8px;
+        y: root.height - root.bar-h + 6px;
+        width: root.width - 16px;
+        height: root.bar-h - 14px;
         background: Theme.phone-glass;
-        border-top-left-radius: Theme.phone-card;
-        border-top-right-radius: Theme.phone-card;
-
-        Rectangle {
-            x: 0;
-            y: 0;
-            width: parent.width;
-            height: 1px;
-            background: Theme.line;
-        }
+        border-radius: 32px;
+        border-width: 1px;
+        border-color: Theme.phone-edge;
+        drop-shadow-blur: 24px;
+        drop-shadow-color: Theme.phone-shadow;
 
         // Nothing selected: what can be brought into the cut, and the
         // project's own verbs.

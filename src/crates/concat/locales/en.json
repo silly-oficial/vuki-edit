@@ -635,8 +635,8 @@
   "start.newProject": "New project",
   "start.newProjectNote": "Pick a shape and a frame rate",
   "start.noMatches": "No project matches “{0}”.",
-  "start.noProjectsNote": "Everything you make or open shows up here. New to editing? The first-edit guide goes from an empty timeline to an exported video in five steps.",
-  "start.noProjectsYet": "No projects yet",
+  "start.noProjectsNote": "Your edits will appear here. Start with a video or photo.",
+  "start.noProjectsYet": "A new story starts here",
   "start.notConcatProjectFolder": "{0} is not a Concat project folder",
   "start.openAProject": "Open a project",
   "start.openProject": "Open project",
@@ -653,8 +653,8 @@
   "start.showInFolder": "Show in folder",
   "start.sortName": "Name",
   "start.sortRecent": "Recent",
-  "start.welcome": "Welcome to Concat",
-  "start.welcomeBack": "Welcome back",
+  "start.welcome": "Vuki",
+  "start.welcomeBack": "Vuki",
   "start.welcomeBackNote": "Pick up where you left off, or start something new.",
   "start.welcomeNote": "A free video editor that runs entirely on this machine.",
   "start.whatsNew": "What's new in {0}",
@@ -890,5 +890,9 @@
   "voices.styles": "Styles",
   "voices.stylesHint": "A style is a voice with effects on it. Pick one to write in it: the effects go on the speech clip, where you can change them.",
   "voices.voices": "Voices",
-  "voices.yours": "Your voices"
+  "voices.yours": "Your voices",
+  "start.chooseMedia": "Choose a video or photo",
+  "start.chooseVisualMedia": "Choose a supported video or photo to start.",
+  "start.preparingMedia": "Preparing your media…",
+  "start.vukiTagline": "Your moments. Your next film."
 }

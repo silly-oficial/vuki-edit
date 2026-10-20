@@ -1286,7 +1286,7 @@ export component Lanes inherits Rectangle {
     property <float> first-tick: root.tick > 0
         ? Math.ceil(root.scroll-left / root.tick) * root.tick : 0;
 
-    background: Theme.lane;
+    background: root.finger ? Colors.transparent : Theme.lane;
     clip: true;
 
     // Two fingers pinched, or a trackpad's pinch: the zoom, through the
@@ -1377,7 +1377,8 @@ export component Lanes inherits Rectangle {
             y: root.ruler-height + track.top - root.track-scroll;
             width: parent.width;
             height: track.height;
-            background: Math.mod(row, 2) == 0 ? Theme.lane : Theme.lane-alt;
+            background: root.finger ? Theme.phone-glass.with-alpha(0.18)
+                : Math.mod(row, 2) == 0 ? Theme.lane : Theme.lane-alt;
             visible: self.y + track.height > root.ruler-height && self.y < root.height;
 
             Rectangle {
@@ -1399,7 +1400,7 @@ export component Lanes inherits Rectangle {
             y: root.ruler-height;
             width: 1px;
             height: root.lanes-h;
-            background: Theme.grid;
+            background: root.finger ? Theme.grid.with-alpha(0.25) : Theme.grid;
             // Nothing before the start of the cut: a centred view begins
             // half a screen before it, and that half is empty ground.
             visible: root.tick > 0 && self.seconds >= 0
@@ -1669,7 +1670,7 @@ export component Lanes inherits Rectangle {
             y: 0;
             width: parent.width;
             height: root.ruler-height;
-            background: Theme.ruler;
+            background: root.finger ? Theme.phone-glass : Theme.ruler;
             clip: true;
 
             // Fixed count, clipped to the pane. A tick count derived from the

@@ -25,6 +25,7 @@ pub mod relink;
 pub mod settings;
 pub mod sounds;
 pub mod speech;
+mod source_format;
 pub mod start;
 pub mod timeline;
 pub mod voiceover;

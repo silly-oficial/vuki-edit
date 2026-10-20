@@ -289,6 +289,7 @@ fn start(project: Option<std::path::PathBuf>, smoke: bool) -> Result<(), slint::
     // A fresh phone install opens in the light Vuki style; saved choices win.
     let dark = studio.prefs.dark.unwrap_or(!phone);
     app.global::<Theme>().set_dark(dark);
+    app.global::<Theme>().set_phone(phone);
     // The accent is remembered by name and the names live on the Theme
     // global, so the index is looked up there rather than kept in Rust too.
     // A remembered hex is a colour picked by hand, which is the slot past

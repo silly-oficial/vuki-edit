@@ -2529,6 +2529,23 @@ impl Studio {
     /// thing on it, without the lanes having to be typed. An empty one takes
     /// the middle size.
     fn lane_height(&self, lane: &Track) -> f32 {
+        // Keep unused phone lanes addressable without pushing the first clip out of view.
+        if self.lanes.centred && self.lane_size(&lane.id) == TrackSize::Auto {
+            let mut height = 20.0_f32;
+            for clip in self
+                .timeline()
+                .clips
+                .iter()
+                .filter(|clip| clip.track_id == lane.id)
+            {
+                height = height.max(match clip.kind {
+                    model::ClipKind::Video | model::ClipKind::Image => 88.0,
+                    model::ClipKind::Audio => 60.0,
+                    _ => 44.0,
+                });
+            }
+            return height;
+        }
         match self.lane_size(&lane.id) {
             TrackSize::Small => LANE_SMALL,
             TrackSize::Medium => LANE_MEDIUM,

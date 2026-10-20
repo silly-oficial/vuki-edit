@@ -635,8 +635,8 @@
   "start.newProject": "Novo projeto",
   "start.newProjectNote": "Escolha a forma e a taxa de quadros",
   "start.noMatches": "Nenhum projeto corresponde a “{0}”.",
-  "start.noProjectsNote": "Tudo que você cria ou abre aparece aqui. Novo em edição? O guia “Sua primeira edição” vai de uma linha do tempo vazia a um vídeo exportado em cinco passos.",
-  "start.noProjectsYet": "Nenhum projeto ainda",
+  "start.noProjectsNote": "Suas edições ficam aqui. Comece com um vídeo ou uma foto.",
+  "start.noProjectsYet": "Uma nova história começa aqui",
   "start.notConcatProjectFolder": "{0} não é uma pasta de projeto do Concat",
   "start.openAProject": "Abrir um projeto",
   "start.openProject": "Abrir projeto",
@@ -653,8 +653,8 @@
   "start.showInFolder": "Mostrar na pasta",
   "start.sortName": "Nome",
   "start.sortRecent": "Recentes",
-  "start.welcome": "Boas-vindas ao Concat",
-  "start.welcomeBack": "Olá de novo",
+  "start.welcome": "Vuki",
+  "start.welcomeBack": "Vuki",
   "start.welcomeBackNote": "Continue de onde parou ou comece algo novo.",
   "start.welcomeNote": "Um editor de vídeo gratuito que roda inteiramente nesta máquina.",
   "start.whatsNew": "Novidades da {0}",
@@ -890,5 +890,9 @@
   "voices.styles": "Estilos",
   "voices.stylesHint": "Um estilo é uma voz com efeitos. Escolha um para escrever com ele: os efeitos vão para o clipe de fala, onde você pode mudá-los.",
   "voices.voices": "Vozes",
-  "voices.yours": "Suas vozes"
+  "voices.yours": "Suas vozes",
+  "start.chooseMedia": "Escolha um vídeo ou foto",
+  "start.chooseVisualMedia": "Escolha um vídeo ou foto compatível para começar.",
+  "start.preparingMedia": "Preparando sua mídia…",
+  "start.vukiTagline": "Seus momentos. Seu próximo filme."
 }
