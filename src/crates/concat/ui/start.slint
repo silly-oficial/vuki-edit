@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Jareer and Concat contributors
 
+import { Atmosphere } from "phone/atmosphere.slint";
 import { I18n } from "i18n.slint";
 import { Theme } from "theme/theme.slint";
 import { CopyChip, Modal } from "primitives/modal.slint";
@@ -630,8 +631,8 @@ component BarAction inherits Rectangle {
 
     property <bool> lit: touch.has-hover && root.enabled;
 
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     border-radius: self.width / 2;
     background: root.lit ? Theme.launch-field : Theme.launch-raised;
     border-width: 1px;
@@ -737,11 +738,11 @@ component CreateTile inherits Pressable {
     in property <string> note;
     in property <bool> primary;
 
-    property <color> ink: root.primary ? Theme.on-accent : Theme.fg;
+    property <color> ink: root.primary ? Theme.phone-on-action : Theme.fg;
 
     label: root.title;
     background: root.primary
-        ? (root.lit && !root.down ? Theme.accent-hover : Theme.accent)
+        ? (root.down ? Theme.phone-action.darker(0.12) : Theme.phone-action)
         : (root.lit ? Theme.launch-raised : Theme.launch-panel);
     border-width: root.primary ? 0px : 1px;
     border-color: root.lit ? Theme.line-strong : Theme.line;
@@ -1080,11 +1081,11 @@ component ProjectRow inherits Pressable {
     callback forgotten();
 
     label: root.project.name;
-    radius: Theme.r;
+    radius: Theme.phone-card;
     clicked => { root.opened(); }
     deleted => { root.forgotten(); }
-    height: 68px;
-    background: root.lit || root.down ? Theme.launch-raised : Colors.transparent;
+    height: 84px;
+    background: root.lit || root.down ? Theme.launch-raised : Theme.phone-glass;
 
     HorizontalLayout {
         padding-left: 8px;
@@ -1433,12 +1434,12 @@ component EmptyProjects inherits Rectangle {
 
     border-radius: Theme.r-lg;
     border-width: 1px;
-    border-color: Theme.line;
-    background: Theme.launch-panel;
+    border-color: Theme.phone-edge;
+    background: Theme.phone-glass;
     height: body.preferred-height;
 
     body := VerticalLayout {
-        padding: 36px;
+        padding: 24px;
         spacing: 12px;
         alignment: center;
 
@@ -1506,7 +1507,7 @@ component VersionLine inherits HorizontalLayout {
     VerticalLayout {
         alignment: center;
         Text {
-            text: "Concat " + root.version;
+            text: "Vuki " + root.version;
             color: Theme.fg-dim;
             font-family: Theme.font-technical;
             font-size: Theme.fs-sm;
@@ -1655,9 +1656,7 @@ component WideHome inherits Rectangle {
 
                 // ── the greeting ─────────────────────────────────────
                 Text {
-                    text: root.recents-total == 0
-                        ? I18n.t("start.welcome")
-                        : I18n.t("start.welcomeBack");
+                    text: "Vuki";
                     color: Theme.fg;
                     // The one display-sized line in the app. The tree
                     // bundles no display face, so the interface face
@@ -1884,7 +1883,8 @@ component NarrowHome inherits Rectangle {
     callback search-edited(query: string);
     callback link(name: string);
 
-    property <length> pad: 16px;
+    property <length> pad: 20px;
+    property <bool> learning: false;
     property <bool> searchable: root.recents-total > 8;
 
     flick := Flickable {
@@ -1899,7 +1899,7 @@ component NarrowHome inherits Rectangle {
             height: self.preferred-height;
             padding-left: root.pad;
             padding-right: root.pad;
-            padding-top: 24px;
+            padding-top: 28px;
             padding-bottom: 28px;
             alignment: start;
 
@@ -1908,11 +1908,9 @@ component NarrowHome inherits Rectangle {
 
                 Text {
                     horizontal-stretch: 1;
-                    text: root.recents-total == 0
-                        ? I18n.t("start.welcome")
-                        : I18n.t("start.welcomeBack");
+                    text: "Vuki";
                     color: Theme.fg;
-                    font-size: 26px;
+                    font-size: 38px;
                     font-weight: Theme.weight-display;
                     letter-spacing: -0.6px;
                     vertical-alignment: center;
@@ -1943,9 +1941,7 @@ component NarrowHome inherits Rectangle {
             Rectangle { height: 6px; }
 
             Text {
-                text: root.recents-total == 0
-                    ? I18n.t("start.welcomeNote")
-                    : I18n.t("start.welcomeBackNote");
+                text: I18n.t("start.vukiTagline");
                 color: Theme.fg-muted;
                 font-size: Theme.fs-lg;
                 wrap: word-wrap;
@@ -1956,11 +1952,15 @@ component NarrowHome inherits Rectangle {
             // New project across the width: the one thing on the screen
             // that starts something, where a thumb reaches.
             CreateTile {
-                height: 72px;
+                height: 100px;
+                radius: 28px;
+                drop-shadow-blur: 24px;
+                drop-shadow-offset-y: 10px;
+                drop-shadow-color: Theme.phone-shadow;
                 primary: true;
                 glyph: Glyph.plus;
-                title: I18n.t("start.newProject");
-                note: I18n.t("start.newProjectNote");
+                title: root.busy ? I18n.t("start.preparingMedia") : I18n.t("start.newProject");
+                note: root.phone ? I18n.t("start.chooseMedia") : I18n.t("start.newProjectNote");
                 enabled: !root.busy;
                 clicked => { root.compose(); }
             }
@@ -2004,18 +2004,20 @@ component NarrowHome inherits Rectangle {
 
             Rectangle { height: 32px; }
 
-            SectionHead {
-                height: 28px;
-                text: I18n.t("start.learnAndCommunity");
+            PillButton {
+                block: true;
+                label: I18n.t("start.learnAndCommunity");
+                glyph: Glyph.info;
+                clicked => { root.learning = !root.learning; }
             }
 
             Rectangle { height: 10px; }
 
             // One grouped list, as a phone's settings are: one surface,
             // rows on it, hairlines between.
-            Rectangle {
-                border-radius: Theme.r-lg;
-                background: Theme.launch-panel;
+            if root.learning: Rectangle {
+                border-radius: Theme.phone-card;
+                background: Theme.phone-glass;
                 border-width: 1px;
                 border-color: Theme.line;
                 height: list.preferred-height;
@@ -2085,6 +2087,7 @@ export component StartScreen inherits Rectangle {
 
     background: Theme.launch-page;
     clip: true;
+    if root.phone: Atmosphere { }
 
     if !root.narrow: WideHome {
         width: root.width;

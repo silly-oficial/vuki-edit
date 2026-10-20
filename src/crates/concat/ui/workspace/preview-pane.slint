@@ -861,7 +861,7 @@ export component PreviewPane inherits Rectangle {
             // it rather than sit level with it — the darker the surround, the
             // less the picture has to fight to be the brightest thing in the
             // pane.
-            background: Theme.well;
+            background: root.bare ? Colors.transparent : Theme.well;
             clip: true;
 
             // Less air on a phone, where the pane is the screen's width and
@@ -1008,6 +1008,10 @@ export component PreviewPane inherits Rectangle {
                 width: viewport.stage-w;
                 height: viewport.stage-h;
                 background: Theme.stage;
+                border-radius: root.bare ? 20px : 0px;
+                drop-shadow-blur: root.bare ? 24px : 0px;
+                drop-shadow-offset-y: root.bare ? 8px : 0px;
+                drop-shadow-color: Theme.phone-shadow;
                 // A 1px ring lifts the stage off the well. Slint has no
                 // box-shadow, so the ring does the work alone — which is why
                 // it is `line-strong` and not the hairline every other edge

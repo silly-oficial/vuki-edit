@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+import { Theme } from "../theme/theme.slint";
+// Diffuse radial fields avoid a full-screen blur pass on every video frame.
+export component Atmosphere inherits Rectangle {
+    background: Theme.phone-atmosphere;
+    Image {
+        width: parent.width;
+        height: parent.height;
+        source: @image-url("../assets/vuki-atmosphere.svg");
+        image-fit: cover;
+        opacity: Theme.dark ? 0.12 : 1;
+    }
+}

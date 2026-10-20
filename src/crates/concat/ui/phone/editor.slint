@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Jareer and Concat contributors
 
+import { Atmosphere } from "atmosphere.slint";
 import { I18n } from "../i18n.slint";
 import { Theme } from "../theme/theme.slint";
 import { Fmt } from "../util.slint";
@@ -398,7 +399,7 @@ export component PhoneEditor inherits Rectangle {
             : "";
     }
 
-    background: Theme.page;
+    Atmosphere { }
 
     // Placed rather than laid out. The lanes take a share of the screen's
     // height, and a layout that read the height of the thing it is sizing
@@ -406,20 +407,27 @@ export component PhoneEditor inherits Rectangle {
     // each at a height of its own: the bar and the lanes are measured up
     // from the foot, the top bar and the transport down from the head, and
     // the monitor is what is left between.
-    property <length> top-h: 48px;
-    property <length> transport-h: 60px;
+    property <length> top-h: root.height < 640px ? 64px : 76px;
+    property <length> transport-h: 100px;
     /// A third of the screen, and never less than a ruler and two lanes.
-    property <length> lanes-h: Math.max(170px, root.height * 0.3);
-    property <length> bar-h: 74px;
+    property <length> lanes-h: Math.max(root.height < 640px ? 140px : 180px, Math.min(260px, root.height * 0.29));
+    property <length> bar-h: root.height < 640px ? 80px : 88px;
     property <length> lanes-y: root.height - root.bar-h - root.lanes-h;
     property <length> transport-y: root.lanes-y - root.transport-h;
 
     // ── the top bar ──────────────────────────────────────────────────
     Rectangle {
-        x: 0;
-        y: 0;
-        width: root.width;
-        height: root.top-h;
+        x: 12px;
+        y: 8px;
+        width: root.width - 24px;
+        height: root.top-h - 16px;
+        background: Theme.phone-glass;
+        border-radius: 30px;
+        border-width: 1px;
+        border-color: Theme.phone-edge;
+        drop-shadow-blur: 20px;
+        drop-shadow-offset-y: 6px;
+        drop-shadow-color: Theme.phone-shadow;
 
         HorizontalLayout {
             padding-left: 4px;
@@ -472,9 +480,9 @@ export component PhoneEditor inherits Rectangle {
 
                 Rectangle {
                     width: export-label.preferred-width + export-icon.width + 32px;
-                    height: 36px;
-                    border-radius: Theme.r;
-                    background: export-touch.pressed ? Theme.accent-hover : Theme.accent;
+                    height: 44px;
+                    border-radius: 22px;
+                    background: export-touch.pressed ? Theme.phone-action.darker(0.12) : Theme.phone-action;
 
                     animate background { duration: 100ms; easing: cubic-bezier(0.4, 0, 0.2, 1); }
 
@@ -486,12 +494,12 @@ export component PhoneEditor inherits Rectangle {
                             export-icon := Icon {
                                 glyph: Glyph.export;
                                 size: 14px;
-                                tint: Theme.on-accent;
+                                tint: Theme.phone-on-action;
                             }
                         }
                         export-label := Text {
                             text: I18n.t("common.export");
-                            color: Theme.on-accent;
+                            color: Theme.phone-on-action;
                             font-size: Theme.fs-lg;
                             font-weight: Theme.weight-title;
                             vertical-alignment: center;
@@ -520,10 +528,13 @@ export component PhoneEditor inherits Rectangle {
 
         monitor := PreviewPane {
             x: 8px;
-            y: 0;
+            y: 12px;
             width: parent.width - 16px;
-            height: parent.height;
+            height: Math.max(0px, parent.height - 24px);
+            border-radius: Theme.phone-card;
+            clip: true;
             bare: true;
+            background: Colors.transparent;
 
             output-width: Editor.output-width;
             output-height: Editor.output-height;
@@ -579,11 +590,19 @@ export component PhoneEditor inherits Rectangle {
     property <int> rate: Math.max(1, Math.round(Editor.frame-rate));
 
     Rectangle {
-        x: 0;
+        x: 8px;
         y: root.transport-y;
-        width: root.width;
+        width: root.width - 16px;
         height: root.transport-h;
+        background: Theme.phone-glass;
+        border-top-left-radius: Theme.phone-card;
+        border-top-right-radius: Theme.phone-card;
 
+        Rectangle {
+            x: 0;
+            y: 0;
+            width: parent.width;
+            height: 44px;
         HorizontalLayout {
             padding-left: 16px;
             padding-right: 4px;
@@ -616,7 +635,7 @@ export component PhoneEditor inherits Rectangle {
                 RoundButton {
                     glyph: Glyph.fit;
                     label: I18n.t("previewPane.fitFramePane");
-                    size: 36px;
+                    size: 44px;
                     icon-size: 16px;
                     clicked => { monitor.fit-view(); }
                 }
@@ -627,7 +646,7 @@ export component PhoneEditor inherits Rectangle {
                     glyph: Glyph.undo;
                     label: I18n.t("phone.undo");
                     enabled: Editor.can-undo;
-                    size: 36px;
+                    size: 44px;
                     icon-size: 17px;
                     clicked => { Editor.undo(); }
                 }
@@ -638,17 +657,19 @@ export component PhoneEditor inherits Rectangle {
                     glyph: Glyph.redo;
                     label: I18n.t("phone.redo");
                     enabled: Editor.can-redo;
-                    size: 36px;
+                    size: 44px;
                     icon-size: 17px;
                     clicked => { Editor.redo(); }
                 }
             }
         }
 
+        }
+
         RoundButton {
             x: play.x - self.width - 2px;
-            y: (parent.height - self.height) / 2;
-            size: 36px;
+            y: parent.height - self.height - 6px;
+            size: 44px;
             icon-size: 16px;
             repeats: true;
             enabled: root.frames > 0;
@@ -661,8 +682,8 @@ export component PhoneEditor inherits Rectangle {
         // below: the fill is what makes it the one to reach for, not bulk.
         play := RoundButton {
             x: (parent.width - self.width) / 2;
-            y: (parent.height - self.height) / 2;
-            size: 40px;
+            y: parent.height - self.height - 6px;
+            size: 44px;
             icon-size: 18px;
             accent: true;
             glyph: Editor.playing ? Glyph.pause : Glyph.play;
@@ -672,8 +693,8 @@ export component PhoneEditor inherits Rectangle {
 
         RoundButton {
             x: play.x + play.width + 2px;
-            y: (parent.height - self.height) / 2;
-            size: 36px;
+            y: parent.height - self.height - 6px;
+            size: 44px;
             icon-size: 16px;
             repeats: true;
             glyph: Glyph.step-forward;
@@ -711,8 +732,8 @@ export component PhoneEditor inherits Rectangle {
             y: 0;
             width: parent.width - 16px;
             height: parent.height;
-            background: Theme.panel;
-            border-radius: Theme.r-lg;
+            background: Theme.phone-glass;
+            border-radius: Theme.phone-card;
             clip: true;
 
             lanes := Lanes {
@@ -816,18 +837,16 @@ export component PhoneEditor inherits Rectangle {
 
     // ── the bar ──────────────────────────────────────────────────────
     Rectangle {
-        x: 0;
-        y: root.height - root.bar-h;
-        width: root.width;
-        height: root.bar-h;
-
-        Rectangle {
-            x: 0;
-            y: 0;
-            width: parent.width;
-            height: 1px;
-            background: Theme.line;
-        }
+        x: 8px;
+        y: root.height - root.bar-h + 6px;
+        width: root.width - 16px;
+        height: root.bar-h - 14px;
+        background: Theme.phone-glass;
+        border-radius: 32px;
+        border-width: 1px;
+        border-color: Theme.phone-edge;
+        drop-shadow-blur: 24px;
+        drop-shadow-color: Theme.phone-shadow;
 
         // Nothing selected: what can be brought into the cut, and the
         // project's own verbs.
@@ -1099,11 +1118,14 @@ export component PhoneEditor inherits Rectangle {
     // panel bound to the Editor global the way the seats bind it; the
     // library's pages close themselves once something is placed, so what
     // was placed is seen, and the inspector's stay up to be worked in.
+    // Keep the monitor, transport and category bar available during edits.
+    // Panels replace only the lanes; their own scroll handles longer controls.
     PhoneSheet {
         x: 0;
-        y: 0;
+        y: root.lanes-y;
         width: root.width;
-        height: root.height;
+        height: root.lanes-h;
+        sheet-height: root.lanes-h;
         open: root.sheet != "";
         title: root.sheet-title(root.sheet);
         closed => { root.hide(); }

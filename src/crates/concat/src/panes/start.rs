@@ -23,6 +23,8 @@ pub enum StartMsg {
     Compose,
     /// Take it down, keeping what was typed for next time.
     Dismiss,
+    MediaChosen(Vec<PathBuf>),
+    MediaReady(Vec<Result<concat_host::media::MediaSummary, String>>),
     NameEdited(String),
     LocationEdited(String),
     /// The frame's shape: 16:9, 9:16, 1:1, 4:3.
@@ -236,6 +238,25 @@ impl StartPane {
     pub fn update(&mut self, msg: StartMsg, studio: &mut Studio) {
         match msg {
             StartMsg::Compose => {
+                if self.busy {
+                    return;
+                }
+                if platform::phone() && studio.on_start {
+                    crate::host::pick_files_then(
+                        t("start.chooseMedia"),
+                        Some((
+                            t("common.media"),
+                            &[
+                                "mp4", "mov", "mkv", "webm", "avi", "m4v", "png", "jpg", "jpeg",
+                                "webp", "gif", "bmp", "tif", "tiff", "heic", "heif", "avif",
+                            ],
+                        )),
+                        |studio, _, _, paths| {
+                            studio.handle(crate::panes::Msg::Start(StartMsg::MediaChosen(paths)))
+                        },
+                    );
+                    return;
+                }
                 self.composing = true;
                 // A name somebody typed is kept for next time; one this
                 // sheet made up moves on past the folders already there.
@@ -243,6 +264,25 @@ impl StartPane {
                     self.name = self.free_untitled();
                 }
             }
+            StartMsg::MediaChosen(paths) => {
+                if self.busy || paths.is_empty() {
+                    return;
+                }
+                self.busy = true;
+                self.error.clear();
+                crate::host::spawn(
+                    move || {
+                        paths
+                            .iter()
+                            .map(|path| concat_host::media::probe(&path.to_string_lossy()))
+                            .collect()
+                    },
+                    |studio, _, _, results| {
+                        studio.handle(crate::panes::Msg::Start(StartMsg::MediaReady(results)))
+                    },
+                );
+            }
+            StartMsg::MediaReady(results) => self.create_from_media(results, studio),
             StartMsg::Dismiss => {
                 self.composing = false;
                 // The notice belongs to the attempt it reported on, not to
@@ -352,6 +392,81 @@ impl StartPane {
         }
     }
 
+    /// Probe before creating: cancellation and unsupported media leave no empty project.
+    fn create_from_media(
+        &mut self,
+        results: Vec<Result<concat_host::media::MediaSummary, String>>,
+        studio: &mut Studio,
+    ) {
+        self.busy = false;
+        // A picker started on home must not replace a project opened meanwhile.
+        if studio.session.is_some() {
+            return;
+        }
+        let mut media = Vec::new();
+        let mut failure = None;
+        for result in results {
+            match result {
+                Ok(item)
+                    if item.video.is_some()
+                        && item.kind != concat_project::model::MediaKind::Audio =>
+                {
+                    media.push(item)
+                }
+                Ok(_) => failure = Some(t("start.chooseVisualMedia")),
+                Err(error) => failure = Some(error),
+            }
+        }
+        let Some(first) = media.first() else {
+            studio.notify(
+                &failure.unwrap_or_else(|| t("start.chooseVisualMedia")),
+                true,
+            );
+            return;
+        };
+        let video = first.video.as_ref().expect("visual media checked above");
+        let rate = (first.kind == concat_project::model::MediaKind::Video)
+            .then_some(video.frame_rate_fraction.as_str());
+        let (width, height, num, den) =
+            super::source_format::project_format(video.width, video.height, rate);
+        self.name = self.free_untitled();
+        let opened = projects::create(&self.location, &self.name, width, height, num, den)
+            .and_then(|info| studio.open_project(info));
+        if let Err(error) = opened {
+            studio.notify(&error, true);
+            return;
+        }
+        self.composing = false;
+        self.dropped.clear();
+        studio.prefs.last_project_location = Some(self.location.clone());
+        studio.prefs.save(&studio.host.dirs);
+        use concat_project::Command;
+        studio.apply(Command::Batch {
+            commands: media
+                .iter()
+                .map(|item| Command::AddMedia {
+                    item: item.to_new_media(),
+                })
+                .collect(),
+        });
+        let ids = studio
+            .project()
+            .media
+            .iter()
+            .map(|item| item.id.clone())
+            .collect();
+        studio.apply(Command::AddClipsInSequence {
+            media_ids: ids,
+            track_id: None,
+            start: 0.0,
+            ripple: false,
+        });
+        studio.request_preview();
+        if let Some(error) = failure {
+            studio.notify(&error, true);
+        }
+    }
+
     /// Files or folders dropped on the launch screen. A project folder
     /// among them opens, the first if there are several, as Open would;
     /// anything else is media, and puts up the new-project sheet with the
@@ -369,6 +484,10 @@ impl StartPane {
         let media: Vec<PathBuf> = paths.into_iter().filter(|path| path.is_file()).collect();
         if media.is_empty() {
             studio.notify(&t("start.dropNothingToOpen"), true);
+            return;
+        }
+        if platform::phone() && studio.on_start {
+            self.update(StartMsg::MediaChosen(media), studio);
             return;
         }
         // A second drop while the sheet is up adds to the first.

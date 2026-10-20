@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="1100" viewBox="0 0 600 1100">
+<defs>
+<linearGradient id="base" x2=".8" y2="1"><stop stop-color="#edf2f7"/><stop offset="1" stop-color="#cbd3e4"/></linearGradient>
+<radialGradient id="lime"><stop stop-color="#e4f3bd" stop-opacity=".95"/><stop offset="1" stop-color="#e4f3bd" stop-opacity="0"/></radialGradient>
+<radialGradient id="blue"><stop stop-color="#a9b9d9" stop-opacity=".8"/><stop offset="1" stop-color="#b8c5df" stop-opacity="0"/></radialGradient>
+<radialGradient id="light"><stop stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+</defs><path fill="url(#base)" d="M0 0h600v1100H0z"/>
+<ellipse cx="70" cy="820" rx="400" ry="420" fill="url(#lime)"/>
+<ellipse cx="580" cy="490" rx="440" ry="490" fill="url(#blue)"/>
+<ellipse cx="80" cy="80" rx="470" ry="460" fill="url(#light)"/>
+</svg>

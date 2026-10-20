@@ -33,7 +33,7 @@ export component PhoneSheet inherits Rectangle {
     property <length> dismiss-at: 80px;
 
     visible: root.open;
-    background: transparent;
+    background: Theme.overlay.with-alpha(0.18);
 
     // What is left above the sheet. A tap there is a dismissal; declared
     // first, so the surface takes its own presses.
@@ -42,15 +42,17 @@ export component PhoneSheet inherits Rectangle {
     }
 
     surface := Rectangle {
-        x: 0;
+        x: 8px;
         y: root.height - self.height + root.drag;
-        width: root.width;
+        width: root.width - 16px;
         height: root.sheet-height;
-        background: Theme.panel;
-        border-top-left-radius: Theme.r-xl;
-        border-top-right-radius: Theme.r-xl;
+        background: Theme.dark ? #252e3cf5 : #f8fbf3f2;
+        drop-shadow-blur: 24px;
+        drop-shadow-color: Theme.phone-shadow;
+        border-top-left-radius: Theme.phone-sheet;
+        border-top-right-radius: Theme.phone-sheet;
         border-width: 1px;
-        border-color: Theme.line-strong;
+        border-color: Theme.phone-edge;
         clip: true;
 
         // Swallows presses that land on the sheet, so they do not reach the
@@ -127,7 +129,7 @@ export component PhoneSheet inherits Rectangle {
                         alignment: center;
                         Rectangle {
                             width: 44px;
-                            height: 40px;
+                            height: 44px;
                             border-radius: Theme.r;
                             background: done.pressed ? Theme.field-active : Colors.transparent;
 
