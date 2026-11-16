@@ -93,7 +93,7 @@ struct PlayerSideDrawer: View {
     private func drawer(width: CGFloat, height: CGFloat) -> some View {
         let tint = artworkTint
         return ScrollView(.vertical) {
-            VStack(alignment: .leading, spacing: 11) {
+            VStack(alignment: .leading, spacing: 8) {
                 Capsule()
                     .fill(.primary.opacity(0.26))
                     .frame(width: 42, height: 5)
@@ -114,7 +114,7 @@ struct PlayerSideDrawer: View {
 
                 Spacer(minLength: 22)
             }
-            .padding(.horizontal, 13)
+            .padding(.horizontal, 16)
             .frame(maxWidth: .infinity, alignment: .topLeading)
         }
         .scrollIndicators(.hidden)
@@ -126,12 +126,12 @@ struct PlayerSideDrawer: View {
                 Rectangle()
                     .fill(reduceTransparency ? tint.wash : tint.wash.opacity(0.43))
                 Rectangle()
-                    .fill(.ultraThinMaterial)
-                    .opacity(reduceTransparency ? 0 : 0.72)
+                    .fill(.regularMaterial)
+                    .opacity(reduceTransparency ? 0 : 0.94)
             }
             .clipShape(
                 UnevenRoundedRectangle(
-                    topLeadingRadius: 32, bottomLeadingRadius: 32,
+                    topLeadingRadius: 28, bottomLeadingRadius: 28,
                     bottomTrailingRadius: 0, topTrailingRadius: 0
                 )
             )
@@ -141,7 +141,7 @@ struct PlayerSideDrawer: View {
                 topLeadingRadius: 32, bottomLeadingRadius: 32,
                 bottomTrailingRadius: 0, topTrailingRadius: 0
             )
-            .strokeBorder(tint.accent.opacity(0.20), lineWidth: 1)
+            .strokeBorder(.white.opacity(0.10), lineWidth: 0.5)
             .allowsHitTesting(false)
         }
         .shadow(color: tint.wash.opacity(0.48), radius: 25, x: -9)
@@ -192,7 +192,7 @@ struct PlayerSideDrawer: View {
         // SongActionButtons(entry:showSleepTimer:showDebugLog:).
         let _ = LikeStore.shared.epoch
 
-        option("Lyrics Offset…", icon: "music.note.list",
+        option("Lyrics", icon: "text.quote",
                enabled: !controller.displayedLyrics.isEmpty) {
             onLyricsOffset()
         }
@@ -418,14 +418,14 @@ struct PlayerSideDrawer: View {
         chevron: String? = nil
     ) -> some View {
         let tint = artworkTint
-        return HStack(spacing: 11) {
+        return HStack(spacing: 13) {
             Image(systemName: icon)
                 .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(destructive ? Color.red : tint.accent)
+                .foregroundStyle(destructive ? Color.red : Color.accentColor)
                 .frame(width: 25)
                 .accessibilityHidden(true)
             Text(title)
-                .font(.system(size: 15, weight: .medium))
+                .font(.system(size: 15, weight: .regular))
                 .foregroundStyle(.primary)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
@@ -438,19 +438,15 @@ struct PlayerSideDrawer: View {
             }
         }
         .padding(.horizontal, 13)
-        .frame(minHeight: 50)
-        .padding(.vertical, 2)
+        .frame(minHeight: 46)
+        .padding(.vertical, 1)
         .background {
-            RoundedRectangle(cornerRadius: 15, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 15, style: .continuous)
-                        .fill(tint.elevated.opacity(0.35))
-                }
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(.white.opacity(0.065))
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 15, style: .continuous)
-                .strokeBorder(tint.accent.opacity(0.13), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(.white.opacity(0.055), lineWidth: 0.5)
         }
         .contentShape(RoundedRectangle(cornerRadius: 15))
         .accessibilityElement(children: .combine)
