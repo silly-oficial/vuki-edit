@@ -73,7 +73,7 @@ replace_once(
             .overlay {
                 PlayerSideDrawer(
                     isPresented: $songDrawerPresented,
-                    onLyricsOffset: { showLyricsOffset = true }
+                    onLyricsOffset: { pane = .lyrics }
                 )
             }
             .toolbar(.hidden, for: .navigationBar)
