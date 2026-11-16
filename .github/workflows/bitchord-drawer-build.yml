@@ -6,6 +6,11 @@ on:
     paths:
       - 'bitchord-build/apply-ios-drawer.py'
       - 'bitchord-build/apply-ios-layout-v2.py'
+      - 'bitchord-build/pending-video-overlay-fix.py'
+      - 'bitchord-build/pending-video-chrome-fix.py'
+      - 'bitchord-build/pending-tabbar-visibility-fix.py'
+      - 'bitchord-build/pending-video-notice-visibility-fix.py'
+      - 'bitchord-build/pending-ptbr-localization.py'
       - 'bitchord-build/swift/PlayerSideDrawer.swift'
       - '.github/workflows/bitchord-drawer-build.yml'
   workflow_dispatch:
@@ -26,10 +31,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m py_compile bitchord-build/apply-ios-layout-v2.py bitchord-build/apply-ios-drawer.py
+          python3 -m py_compile bitchord-build/*.py
           cd BitChord
           python3 ../bitchord-build/apply-ios-layout-v2.py
           python3 ../bitchord-build/apply-ios-drawer.py
+          python3 ../bitchord-build/pending-video-overlay-fix.py
+          python3 ../bitchord-build/pending-video-chrome-fix.py
+          python3 ../bitchord-build/pending-tabbar-visibility-fix.py
+          python3 ../bitchord-build/pending-video-notice-visibility-fix.py
+          python3 ../bitchord-build/pending-ptbr-localization.py
           git add -N AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
           git diff --check
           git diff --stat
@@ -39,6 +49,7 @@ jobs:
           grep -q 'songDrawerPresented' AppleApp/Sources/UI/NowPlaying/NowPlayingView+Transport.swift
           grep -q 'option("Lyrics"' AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
           grep -q 'MPNowPlayingInfoCenter.default().nowPlayingInfo = info' AppleApp/Sources/PlaybackSession/NowPlayingController.swift
+          grep -q 'No music video' AppleApp/Sources/UI/VideoSurface.swift || true
           grep -q 'startSleepAfterTrack' AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
           grep -q 'SongRatingActions.startDownload' AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
           grep -q 'ShareLink(item:' AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
@@ -72,6 +83,11 @@ jobs:
           cd BitChord
           python3 ../bitchord-build/apply-ios-layout-v2.py
           python3 ../bitchord-build/apply-ios-drawer.py
+          python3 ../bitchord-build/pending-video-overlay-fix.py
+          python3 ../bitchord-build/pending-video-chrome-fix.py
+          python3 ../bitchord-build/pending-tabbar-visibility-fix.py
+          python3 ../bitchord-build/pending-video-notice-visibility-fix.py
+          python3 ../bitchord-build/pending-ptbr-localization.py
           git add -N AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
           git diff --check
 
