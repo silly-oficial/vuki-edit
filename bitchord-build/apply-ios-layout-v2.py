@@ -40,8 +40,8 @@ for tab, content in (
         "Search": "magnifyingglass",
     }[tab]
     role = ", role: .search" if tab == "Search" else ""
-    old = f'''                Tab("{tab}", systemImage: "{symbol}", value: RootPage.tab(.{tab.lower()})){role} {{\n                    {content}\n                }}'''
-    new = f'''                Tab("{tab}", systemImage: "{symbol}", value: RootPage.tab(.{tab.lower()})){role} {{\n                    {content}\n                        .modifier(iPhonePlaybackChrome())\n                }}'''
+    old = f'''                Tab("{tab}", systemImage: "{symbol}", value: RootPage.tab(.{tab.lower()}){role}) {{\n                    {content}\n                }}'''
+    new = f'''                Tab("{tab}", systemImage: "{symbol}", value: RootPage.tab(.{tab.lower()}){role}) {{\n                    {content}\n                        .modifier(iPhonePlaybackChrome())\n                }}'''
     root = replace_one(root, old, new, f"{tab} phone tab")
 
 root = replace_one(
@@ -174,14 +174,18 @@ video = replace_one(
     video,
     """        case .fill:
             VideoLayerView(player: player, gravity: .resizeAspectFill)
-                .allowsHitTesting(false)""",
+                .allowsHitTesting(false)
+                .transition(.opacity)""",
     """        case .fill:
             #if os(iOS)
             VideoLayerView(player: player, gravity: .resizeAspectFill, softBottomEdge: true)
+                .allowsHitTesting(false)
+                .transition(.opacity)
             #else
             VideoLayerView(player: player, gravity: .resizeAspectFill)
-            #endif
-                .allowsHitTesting(false)""",
+                .allowsHitTesting(false)
+                .transition(.opacity)
+            #endif""",
     "Fade full-bleed native video",
 )
 video = replace_one(
