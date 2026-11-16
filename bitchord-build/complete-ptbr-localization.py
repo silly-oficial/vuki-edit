@@ -83,7 +83,7 @@ def translate(value):
 def eligible(key):
     if not key.strip() or not re.search(r"[A-Za-z]{2}", key):
         return False
-    if re.match(r"^(https?://|[a-z_]+$)", key) and (" " not in key):
+    if key.startswith(("https://", "http://")):
         return False
     if key in {"BITCHORD", "WebDAV", "YouTube Music", "AirPlay", "Bluetooth", "Spotify Canvas",
                "GitHub", "DAC", "HDMI", "USB Audio", "CarPlay", "Core ML · Neural Engine",
