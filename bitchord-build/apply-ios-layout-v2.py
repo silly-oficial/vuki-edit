@@ -101,8 +101,10 @@ layout = replace_one(
 # abrupt boundary while the actual controls remain inside their safe area.
 layout = replace_one(
     layout,
-    "ArtworkContinuation(entry: controller.current, seam: geo.size.width)\\n                            .ignoresSafeArea(edges: .bottom)",
-    "ArtworkContinuation(entry: controller.current, seam: geo.size.width)\\n                            .ignoresSafeArea()",
+    """ArtworkContinuation(entry: controller.current, seam: geo.size.width)
+                            .ignoresSafeArea(edges: .bottom)""",
+    """ArtworkContinuation(entry: controller.current, seam: geo.size.width)
+                            .ignoresSafeArea()""",
     "Blend cover behind the status bar",
 )
 put(path, layout)
