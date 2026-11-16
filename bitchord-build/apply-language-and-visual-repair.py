@@ -26,6 +26,9 @@ edit("RootView.swift",
         .toolbarBackground(.visible, for: .tabBar)
         .tabViewCustomization($tabCustomization)''')
 edit("Settings/SettingsView.swift",
+    'Text(section.title)',
+    'Text(LocalizedStringKey(section.title))')
+edit("Settings/SettingsView.swift",
     '    @State var crossfade = Int(',
     '    @AppStorage("bitchord.appLanguage") var appLanguage = "system"\n    @State var crossfade = Int(')
 edit("Settings/SettingsView+Appearance.swift",
