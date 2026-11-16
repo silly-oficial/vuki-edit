@@ -1,0 +1,118 @@
+name: Build BitChord with functional iOS side drawer
+
+on:
+  push:
+    branches: [preview/bitchord-ios-layout-v2]
+    paths:
+      - 'bitchord-build/apply-ios-drawer.py'
+      - 'bitchord-build/swift/PlayerSideDrawer.swift'
+      - '.github/workflows/bitchord-drawer-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Apply drawer and verify changed source
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout BitChord source
+        run: git clone --depth 1 https://github.com/bagumamartin/BitChord.git BitChord
+      - name: Apply original visual fixes and new drawer
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile bitchord-build/apply-ios-layout-v2.py bitchord-build/apply-ios-drawer.py
+          cd BitChord
+          python3 ../bitchord-build/apply-ios-layout-v2.py
+          python3 ../bitchord-build/apply-ios-drawer.py
+          git add -N AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
+          git diff --check
+          git diff --stat
+          git diff > ../bitchord-build/bitChord-functional-drawer.patch
+          test -s ../bitchord-build/bitChord-functional-drawer.patch
+          grep -q 'PlayerSideDrawer(' AppleApp/Sources/UI/NowPlaying/NowPlayingView+Layouts.swift
+          grep -q 'songDrawerPresented' AppleApp/Sources/UI/NowPlaying/NowPlayingView+Transport.swift
+          grep -q 'startSleepAfterTrack' AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
+          grep -q 'SongRatingActions.startDownload' AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
+          grep -q 'ShareLink(item:' AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
+          grep -q 'controller.playRadio(entry)' AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
+          grep -q 'controller.addToQueue(entry)' AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
+          grep -q 'controller.playNext(entry)' AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
+          if command -v swiftc >/dev/null 2>&1; then
+            swiftc -frontend -parse AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
+            swiftc -frontend -parse AppleApp/Sources/UI/NowPlaying/NowPlayingView+Layouts.swift
+            swiftc -frontend -parse AppleApp/Sources/UI/NowPlaying/NowPlayingView+Transport.swift
+          fi
+      - name: Publish full source code patch
+        uses: actions/upload-artifact@v4
+        with:
+          name: BitChord-functional-Side-Drawer-source
+          path: bitchord-build/bitChord-functional-drawer.patch
+          retention-days: 14
+
+  build-ios:
+    needs: validate
+    name: Compile iPhone IPA using Xcode 27
+    runs-on: xcode-27
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout and modify BitChord
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/bagumamartin/BitChord.git BitChord
+          cd BitChord
+          python3 ../bitchord-build/apply-ios-layout-v2.py
+          python3 ../bitchord-build/apply-ios-drawer.py
+          git add -N AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
+          git diff --check
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+          cache-dependency-path: BitChord/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Install Apple build toolchains
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          brew install xcodegen cmake
+          rustup target add aarch64-apple-darwin aarch64-apple-ios
+          chmod +x BitChord/gradlew BitChord/scripts/*.sh
+
+      - name: Build Kotlin and Rust frameworks, then the unsigned IPA
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd BitChord
+          CONFIG=release scripts/build-shared-framework.sh
+          NATIVE_TARGETS="aarch64-apple-darwin aarch64-apple-ios" scripts/build-native-core.sh
+          (cd AppleApp && xcodegen generate --spec project.yml)
+          version="$(sed -n 's/^ *MARKETING_VERSION: "\(.*\)"$/\1/p' AppleApp/project.yml | head -1)"
+          test -n "$version"
+          scripts/package-ios-ipa.sh "$version" --output-dir "$PWD/build/drawer" --overwrite
+
+      - name: Validate the resulting iOS archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          ipa="$(find BitChord/build/drawer -name '*.ipa' -print -quit)"
+          test -n "$ipa" && test -s "$ipa"
+          unzip -Z1 "$ipa" | grep -Fxq 'Payload/BitChord.app/Info.plist'
+          unzip -Z1 "$ipa" | grep -Fxq 'Payload/BitChord.app/BitChord'
+          shasum -a 256 "$ipa"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BitChord-functional-Side-Drawer-IPA-unsigned
+          path: BitChord/build/drawer/*.ipa
+          if-no-files-found: error
+          retention-days: 14
