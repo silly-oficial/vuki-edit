@@ -1,0 +1,40 @@
+name: Validate BitChord iPhone UI preview changes
+
+on:
+  push:
+    branches: [preview/bitchord-ios-layout-v2]
+    paths:
+      - 'bitchord-build/apply-ios-layout-v2.py'
+      - '.github/workflows/bitchord-preview-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Validate source patch without compiling IPA
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clone public BitChord source
+        run: git clone --depth 1 https://github.com/bagumamartin/BitChord.git BitChord
+      - name: Apply v2 source changes
+        run: |
+          set -euo pipefail
+          cd BitChord
+          python3 ../bitchord-build/apply-ios-layout-v2.py
+          git diff --check
+          git diff --stat
+          git diff > ../bitchord-build/ios-layout-v2-review.patch
+          test -s ../bitchord-build/ios-layout-v2-review.patch
+          grep -q 'iPhonePlaybackChrome' AppleApp/Sources/UI/RootView.swift
+          grep -q 'softBottomEdge' AppleApp/Sources/UI/VideoSurface.swift
+          echo "Source review patch is valid. No Xcode compilation was run."
+      - name: Upload readable code diff (not an IPA)
+        uses: actions/upload-artifact@v4
+        with:
+          name: BitChord-iOS-layout-v2-review-patch
+          path: bitchord-build/ios-layout-v2-review.patch
+          retention-days: 14
