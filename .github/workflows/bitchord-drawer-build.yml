@@ -12,6 +12,8 @@ on:
       - 'bitchord-build/pending-video-notice-visibility-fix.py'
       - 'bitchord-build/pending-ptbr-localization.py'
       - 'bitchord-build/apply-language-and-visual-repair.py'
+      - 'bitchord-build/fix-verified-ios-issues.py'
+      - 'bitchord-build/complete-ptbr-localization.py'
       - 'bitchord-build/swift/PlayerSideDrawer.swift'
       - '.github/workflows/bitchord-drawer-build.yml'
   workflow_dispatch:
@@ -42,6 +44,8 @@ jobs:
           python3 ../bitchord-build/pending-video-notice-visibility-fix.py
           python3 ../bitchord-build/pending-ptbr-localization.py
           python3 ../bitchord-build/apply-language-and-visual-repair.py
+          python3 ../bitchord-build/fix-verified-ios-issues.py
+          python3 ../bitchord-build/complete-ptbr-localization.py
           git add -N AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
           git diff --check
           git diff --stat
@@ -63,6 +67,13 @@ jobs:
             swiftc -frontend -parse AppleApp/Sources/UI/NowPlaying/NowPlayingView+Layouts.swift
             swiftc -frontend -parse AppleApp/Sources/UI/NowPlaying/NowPlayingView+Transport.swift
           fi
+      - name: Publish verified Portuguese catalog
+        uses: actions/upload-artifact@v4
+        with:
+          name: BitChord-ptBR-complete-catalog
+          path: BitChord/AppleApp/Resources/Localization/Localizable.xcstrings
+          retention-days: 14
+
       - name: Publish full source code patch
         uses: actions/upload-artifact@v4
         with:
@@ -91,8 +102,27 @@ jobs:
           python3 ../bitchord-build/pending-video-notice-visibility-fix.py
           python3 ../bitchord-build/pending-ptbr-localization.py
           python3 ../bitchord-build/apply-language-and-visual-repair.py
+          python3 ../bitchord-build/fix-verified-ios-issues.py
           git add -N AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
           git diff --check
+
+      - name: Restore the validated Portuguese catalog
+        uses: actions/download-artifact@v4
+        with:
+          name: BitChord-ptBR-complete-catalog
+          path: BitChord/AppleApp/Resources/Localization
+
+      - name: Verify translated catalog before compiling
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          p='BitChord/AppleApp/Resources/Localization/Localizable.xcstrings'
+          data=json.load(open(p))['strings']
+          translated=sum(bool(x.get('localizations',{}).get('pt-BR',{}).get('stringUnit',{}).get('value')) for x in data.values())
+          print(f'pt-BR translated catalog entries: {translated}/{len(data)}')
+          assert translated > 650, 'Portuguese coverage below required threshold'
+          PY
 
       - uses: actions/setup-java@v4
         with:
