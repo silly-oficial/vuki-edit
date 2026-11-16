@@ -5,6 +5,7 @@ on:
     branches: [preview/bitchord-ios-layout-v2]
     paths:
       - 'bitchord-build/apply-ios-drawer.py'
+      - 'bitchord-build/apply-ios-layout-v2.py'
       - 'bitchord-build/swift/PlayerSideDrawer.swift'
       - '.github/workflows/bitchord-drawer-build.yml'
   workflow_dispatch:
@@ -36,6 +37,8 @@ jobs:
           test -s ../bitchord-build/bitChord-functional-drawer.patch
           grep -q 'PlayerSideDrawer(' AppleApp/Sources/UI/NowPlaying/NowPlayingView+Layouts.swift
           grep -q 'songDrawerPresented' AppleApp/Sources/UI/NowPlaying/NowPlayingView+Transport.swift
+          grep -q 'option("Lyrics"' AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
+          grep -q 'MPNowPlayingInfoCenter.default().nowPlayingInfo = info' AppleApp/Sources/PlaybackSession/NowPlayingController.swift
           grep -q 'startSleepAfterTrack' AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
           grep -q 'SongRatingActions.startDownload' AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
           grep -q 'ShareLink(item:' AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
