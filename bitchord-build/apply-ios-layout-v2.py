@@ -209,11 +209,15 @@ video = replace_one(
 )
 video = replace_one(
     video,
-    """        view.player = player
+    """    func makeUIView(context: Context) -> VideoLayerHost {
+        let view = VideoLayerHost()
+        view.player = player
         view.gravity = gravity
         VideoPlayback.shared.registerPictureInPictureLayer(view.playerLayer)
         return view""",
-    """        view.player = player
+    """    func makeUIView(context: Context) -> VideoLayerHost {
+        let view = VideoLayerHost()
+        view.player = player
         view.gravity = gravity
         view.softBottomEdge = softBottomEdge
         VideoPlayback.shared.registerPictureInPictureLayer(view.playerLayer)
