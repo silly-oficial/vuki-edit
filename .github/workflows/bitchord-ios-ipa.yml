@@ -1,0 +1,83 @@
+name: Build BitChord iOS with UI fixes
+
+on:
+  push:
+    branches:
+      - build/bitchord-ios-20261116
+    paths:
+      - .github/workflows/bitchord-ios-ipa.yml
+      - bitchord-build/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-ipa:
+    name: Build unsigned IPA on Xcode 27
+    runs-on: xcode-27
+    timeout-minutes: 180
+    steps:
+      - name: Checkout isolated build branch
+        uses: actions/checkout@v4
+
+      - name: Checkout upstream BitChord and apply fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/bagumamartin/BitChord.git BitChord
+          cd BitChord
+          git apply --check ../bitchord-build/ios-layout-fixes.patch
+          git apply ../bitchord-build/ios-layout-fixes.patch
+          git diff --check
+          echo "Applied the four-file iOS UI patch."
+          git diff --stat
+
+      - name: Configure Xcode and Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+          cache-dependency-path: BitChord/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Install required toolchains
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          brew install xcodegen cmake
+          rustup target add aarch64-apple-darwin aarch64-apple-ios
+          cd BitChord
+          chmod +x ./gradlew ./scripts/*.sh
+
+      - name: Compile frameworks and unsigned IPA
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd BitChord
+          CONFIG=release ./scripts/build-shared-framework.sh
+          NATIVE_TARGETS="aarch64-apple-darwin aarch64-apple-ios" ./scripts/build-native-core.sh
+          xcodegen generate --spec AppleApp/project.yml
+          version="$(sed -n 's/^ *MARKETING_VERSION: "\(.*\)"$/\1/p' AppleApp/project.yml | head -1)"
+          test -n "$version"
+          ./scripts/package-ios-ipa.sh "$version" --output-dir "$PWD/build/ipa" --overwrite
+
+      - name: Verify IPA contents and checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          ipa="$(find BitChord/build/ipa -maxdepth 1 -name '*.ipa' -print -quit)"
+          test -n "$ipa" && test -s "$ipa"
+          unzip -Z1 "$ipa" | grep -Fxq 'Payload/BitChord.app/Info.plist'
+          unzip -Z1 "$ipa" | grep -Fxq 'Payload/BitChord.app/BitChord'
+          shasum -a 256 "$ipa"
+          ls -lh "$ipa"
+
+      - name: Upload unsigned IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: BitChord-iOS-UI-fixes-unsigned-IPA
+          path: BitChord/build/ipa/*.ipa
+          if-no-files-found: error
+          retention-days: 14
