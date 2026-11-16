@@ -11,6 +11,7 @@ on:
       - 'bitchord-build/pending-tabbar-visibility-fix.py'
       - 'bitchord-build/pending-video-notice-visibility-fix.py'
       - 'bitchord-build/pending-ptbr-localization.py'
+      - 'bitchord-build/apply-language-and-visual-repair.py'
       - 'bitchord-build/swift/PlayerSideDrawer.swift'
       - '.github/workflows/bitchord-drawer-build.yml'
   workflow_dispatch:
@@ -40,6 +41,7 @@ jobs:
           python3 ../bitchord-build/pending-tabbar-visibility-fix.py
           python3 ../bitchord-build/pending-video-notice-visibility-fix.py
           python3 ../bitchord-build/pending-ptbr-localization.py
+          python3 ../bitchord-build/apply-language-and-visual-repair.py
           git add -N AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
           git diff --check
           git diff --stat
@@ -88,6 +90,7 @@ jobs:
           python3 ../bitchord-build/pending-tabbar-visibility-fix.py
           python3 ../bitchord-build/pending-video-notice-visibility-fix.py
           python3 ../bitchord-build/pending-ptbr-localization.py
+          python3 ../bitchord-build/apply-language-and-visual-repair.py
           git add -N AppleApp/Sources/UI/NowPlaying/PlayerSideDrawer.swift
           git diff --check
 
