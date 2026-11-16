@@ -97,6 +97,14 @@ layout = replace_one(
     "            // Backgrounds remain full bleed; controls respect Dynamic Island.",
     "Respect top safe area",
 )
+# Extend the artwork continuation beneath the status bar, removing the
+# abrupt boundary while the actual controls remain inside their safe area.
+layout = replace_one(
+    layout,
+    "ArtworkContinuation(entry: controller.current, seam: geo.size.width)\\n                            .ignoresSafeArea(edges: .bottom)",
+    "ArtworkContinuation(entry: controller.current, seam: geo.size.width)\\n                            .ignoresSafeArea()",
+    "Blend cover behind the status bar",
+)
 put(path, layout)
 
 # 3. More gradual hero-to-blurred-backdrop dissolve; remove the
@@ -302,3 +310,29 @@ video = video[:old_host_start] + new_host + video[old_host_end:]
 put(path, video)
 
 print("Applied staged iOS UI v2 changes (RootView, PlayerArtwork, NowPlaying layouts, VideoSurface).")
+
+# 5. iOS 27's experimental MediaSession path may fail to claim the system
+# Now Playing slot. Use one consistent MediaPlayer publisher and remote-command
+# pipeline on iPhone, including iOS 27, rather than mixing both frameworks.
+path = ROOT / "AppleApp/Sources/PlaybackSession/NowPlayingController.swift"
+media = path.read_text(encoding="utf-8")
+media = replace_one(
+    media,
+    '''        if #available(iOS 27, *) {
+            resetModernModel()
+            // iOS 27+: metadata and commands live EXCLUSIVELY on the
+            // MediaSession. Publishing this playback through
+            // MPNowPlayingInfoCenter / MPRemoteCommandCenter alongside it is
+            // undefined behavior per Apple ("Don't mix the Now Playing
+            // framework with ... MPNowPlayingInfoCenter and
+            // MPRemoteCommandCenter ... for local playback"). No MP handlers here.
+            return
+        }
+''',
+    '''        // Use the legacy MediaPlayer integration consistently on iOS 27.
+        // The ModernNowPlaying model is never initialized, so the existing
+        // MPNowPlayingInfoCenter and MPRemoteCommandCenter paths own playback.
+''',
+    "Use single MediaPlayer now-playing publisher",
+)
+put(path, media)
