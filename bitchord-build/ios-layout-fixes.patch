@@ -1,0 +1,121 @@
+diff --git a/AppleApp/Sources/UI/RootView.swift b/AppleApp/Sources/UI/RootView.swift
+--- a/AppleApp/Sources/UI/RootView.swift
++++ b/AppleApp/Sources/UI/RootView.swift
+@@ -1011,6 +1011,5 @@
+         } else if #available(iOS 26.0, *) {
+-            // iPhone from 26: Music's own bottom accessory, full width. A scroll
+-            // down minimizes the tab bar and the pill drops into it, between
+-            // the selected tab and Search.
+-            accessory(content.tabBarMinimizeBehavior(.onScrollDown))
++            // Keep the full-height mini-player above an expanded tab bar.
++            // Inline minimization can leave the tab labels behind the pill.
++            accessory(content.tabBarMinimizeBehavior(.never))
+                 .overlay(alignment: .bottom) {
+diff --git a/AppleApp/Sources/UI/NowPlaying/NowPlayingView+Layouts.swift b/AppleApp/Sources/UI/NowPlaying/NowPlayingView+Layouts.swift
+--- a/AppleApp/Sources/UI/NowPlaying/NowPlayingView+Layouts.swift
++++ b/AppleApp/Sources/UI/NowPlaying/NowPlayingView+Layouts.swift
+@@ -70,7 +70,7 @@
+                         } else {
+                             portraitPlayer
+                                 .transition(.opacity)
+                         }
+                     }
+-                    .animation(isIPad ? .easeInOut(duration: 0.22) : nil, value: pane)
++                    .animation(.smooth(duration: 0.32), value: pane)
+                 }
+@@ -106,6 +106,5 @@
+             .toolbar(.hidden, for: .navigationBar)
+             .toolbarTitleDisplayMode(.inline)
+-            // Keep the established edge-to-edge phone artwork. The iPad page
+-            // respects its system top inset so the player has room for chrome.
+-            .ignoresSafeArea(.container, edges: isIPad ? [] : .top)
++            // The backdrop extends edge-to-edge on its own. Keep the artwork
++            // and player controls below the status bar / Dynamic Island.
+         }
+diff --git a/AppleApp/Sources/UI/NowPlaying/PlayerArtwork.swift b/AppleApp/Sources/UI/NowPlaying/PlayerArtwork.swift
+--- a/AppleApp/Sources/UI/NowPlaying/PlayerArtwork.swift
++++ b/AppleApp/Sources/UI/NowPlaying/PlayerArtwork.swift
+@@ -41,15 +41,15 @@
+ /// Upstream's full-bleed banner (`NowPlayingScreen` heroMode): the cover is
+-/// cropped to fill, and the bottom 42% dissolves into the mesh. That dissolve
++/// cropped to fill, and the bottom half dissolves into the mesh. That dissolve
+ /// is the artwork "effect" — not a warp of the pixels. A motion clip, when
+ /// one exists, plays in the same frame with the same mask.
+ struct HeroArtwork: View {
+     var entry: QueueEntry?
+     var canvasURL: URL?
+     var fallbackURL: URL? = nil
+     var isPlaying: Bool
+     var canvasActive = true
+ 
+-    private let fadeFraction: CGFloat = 0.42
++    private let fadeFraction: CGFloat = 0.50
+ 
+     var body: some View {
+         GeometryReader { geo in
+@@ -73,7 +73,9 @@
+                 LinearGradient(
+                     stops: [
+                         .init(color: .white, location: 0),
+                         .init(color: .white, location: 1 - fadeFraction),
++                        .init(color: .white.opacity(0.72), location: 1 - fadeFraction * 0.70),
++                        .init(color: .white.opacity(0.25), location: 1 - fadeFraction * 0.20),
+                         .init(color: .clear, location: 1),
+                     ],
+                     startPoint: .top,
+@@ -95,16 +97,37 @@
+     var body: some View {
+         GeometryReader { geo in
+             if let texture, let edge = texture.cropping(to: CGRect(x: 0, y: 0, width: texture.width, height: 1)) {
+-                VStack(spacing: 0) {
+-                    Image(decorative: edge, scale: 1).resizable()
+-                        .frame(height: min(seam, geo.size.height))
+-                    Image(decorative: texture, scale: 1).resizable()
+-                        .frame(height: max(0, geo.size.height - seam))
++                let headerHeight = min(seam, geo.size.height)
++                let fadeHeight = min(84, max(0, geo.size.height - headerHeight))
++                let totalHeight = headerHeight + fadeHeight
++                // Blend the sleeve's sampled edge into the mesh over 84 pt,
++                // rather than stitching two separately scaled images at a hard seam.
++                ZStack(alignment: .top) {
++                    Image(decorative: texture, scale: 1)
++                        .resizable()
++                        .frame(width: geo.size.width, height: geo.size.height)
++                    Image(decorative: edge, scale: 1)
++                        .resizable()
++                        .frame(width: geo.size.width, height: totalHeight)
++                        .mask {
++                            LinearGradient(
++                                stops: [
++                                    .init(color: .white, location: 0),
++                                    .init(color: .white, location: totalHeight > 0 ? headerHeight / totalHeight : 1),
++                                    .init(color: .clear, location: 1),
++                                ],
++                                startPoint: .top,
++                                endPoint: .bottom
++                            )
++                        }
+                 }
+-                .frame(width: geo.size.width)
++                .frame(width: geo.size.width, height: geo.size.height)
++                .clipped()
+             }
+         }
+         .allowsHitTesting(false)
+-        .task(id: entry?.thumbnailUrl ?? entry?.id) {
++        .task(id: "\(entry?.id ?? "")|\(entry?.thumbnailUrl ?? "")") {
++            // Never show the previous track's continuation while this one loads.
++            texture = nil
+             guard let entry else { return }
+             let source: PlatformImage?
+diff --git a/AppleApp/Sources/UI/VideoSurface.swift b/AppleApp/Sources/UI/VideoSurface.swift
+--- a/AppleApp/Sources/UI/VideoSurface.swift
++++ b/AppleApp/Sources/UI/VideoSurface.swift
+@@ -635,5 +635,5 @@
+         }
+-        .animation(.easeInOut(duration: 0.25), value: VideoPlayback.shared.showsVideo)
+-        .animation(.easeInOut(duration: 0.25), value: VideoPlayback.shared.isLoading)
++        .animation(.smooth(duration: 0.35), value: VideoPlayback.shared.showsVideo)
++        .animation(.smooth(duration: 0.32), value: VideoPlayback.shared.isLoading)
+         .animation(.easeInOut(duration: 0.25), value: VideoPlayback.shared.notice)
+         #if os(iOS)
