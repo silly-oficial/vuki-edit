@@ -30,7 +30,7 @@ replace("RootView.swift", "    var body: some View {\n        shell",
 replace("NowPlaying/NowPlayingView+Layouts.swift",
 '''                    if !isIPad && pane == .main && !PlayerLayout.takesLandscapeShape(width: geo.size.width, height: geo.size.height) && fullBleedOn && !videoShowing {
                         ArtworkContinuation(entry: controller.current, seam: geo.size.width)
-                            .ignoresSafeArea(edges: .bottom)
+                            .ignoresSafeArea()
                     }
 ''',
 '''                    // Do not stretch a 32-pixel artwork texture across the screen.
