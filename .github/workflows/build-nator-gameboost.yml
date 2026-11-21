@@ -47,26 +47,29 @@ jobs:
           test -n "$DEB"
           dpkg-deb -f "$DEB" Architecture | grep -x iphoneos-arm64
           dpkg-deb -f "$DEB" Package | grep -x com.nator.gameboost
+          dpkg-deb -f "$DEB" Version | grep -x 0.1.1
+          dpkg-deb -I "$DEB" >/dev/null
           dpkg-deb -c "$DEB" | grep 'var/jb/usr/bin/natorgamerd'
           dpkg-deb -c "$DEB" | grep 'var/jb/Library/LaunchDaemons/com.nator.gameboost.plist'
           dpkg-deb -c "$DEB" | grep 'var/jb/Library/PreferenceLoader/Preferences/NatorGameBoost.plist'
-          cp "$DEB" ../Nator_GameBoost_0.1.0_iphoneos-arm64.deb
+          cp "$DEB" ../com.nator.gameboost_0.1.1_iphoneos-arm64.deb
+          shasum -a 256 ../com.nator.gameboost_0.1.1_iphoneos-arm64.deb
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: Nator-GameBoost-iOS18-rootless
-          path: Nator_GameBoost_0.1.0_iphoneos-arm64.deb
+          path: com.nator.gameboost_0.1.1_iphoneos-arm64.deb
 
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG=nator-gameboost-v0.1.0
-          DEB=Nator_GameBoost_0.1.0_iphoneos-arm64.deb
+          TAG=nator-gameboost-v0.1.1
+          DEB=com.nator.gameboost_0.1.1_iphoneos-arm64.deb
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release upload "$TAG" "$DEB" --repo "$GITHUB_REPOSITORY" --clobber
           else
-            gh release create "$TAG" "$DEB" --repo "$GITHUB_REPOSITORY"               --target "$GITHUB_SHA"               --title "Nator GameBoost 0.1.0 — iOS 18 Dopamine 3"               --notes "Experimental app-process priority helper for rootless Dopamine 3. Complements built-in iOS Game Mode, attempts CPU nice adjustment for selected games. Does not override jetsam limits, GPU, or thermal protections. Not yet physically tested; no guaranteed FPS gain."
+            gh release create "$TAG" "$DEB" --repo "$GITHUB_REPOSITORY"               --target "$GITHUB_SHA"               --title "Nator GameBoost 0.1.1 — iOS 18 Dopamine 3"               --notes "Experimental app-process priority helper for rootless Dopamine 3. Complements built-in iOS Game Mode, attempts CPU nice adjustment for selected games. Does not override jetsam limits, GPU, or thermal protections. Not yet physically tested; no guaranteed FPS gain."
           fi
