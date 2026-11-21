@@ -1,0 +1,10 @@
+Package: com.nator.gameboost
+Name: Nator GameBoost
+Version: 0.1.0
+Architecture: iphoneos-arm64
+Section: Tweaks
+Priority: optional
+Maintainer: Nator
+Depends: firmware (>= 18.0), preferenceloader
+Description: Complemento ao Modo Jogo iOS 18 que tenta priorizar jogos por nice de CPU. Sem modificacoes de GPU, jetsam ou protecoes termicas.
+Homepage: https://github.com/silly-oficial/vuki-edit
