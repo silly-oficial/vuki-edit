@@ -1,6 +1,6 @@
 Package: com.nator.gameboost
 Name: Nator GameBoost
-Version: 0.1.0
+Version: 0.1.1
 Architecture: iphoneos-arm64
 Section: Tweaks
 Priority: optional
