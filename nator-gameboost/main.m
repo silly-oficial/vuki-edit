@@ -1,5 +1,15 @@
 #import <Foundation/Foundation.h>
+#include <stdint.h>
+#if __has_include(<libproc.h>)
 #include <libproc.h>
+#else
+/* Some patched iPhoneOS SDKs omit libproc.h; these public C signatures
+   match the system libproc ABI. No kernel call or privilege bypass. */
+#define PROC_ALL_PIDS 1
+#define PROC_PIDPATHINFO_MAXSIZE 4096
+extern int proc_listpids(uint32_t type, uint32_t typeinfo, void *buffer, int buffersize);
+extern int proc_pidpath(int pid, void *buffer, uint32_t buffersize);
+#endif
 #include <sys/resource.h>
 #include <signal.h>
 #include <errno.h>
