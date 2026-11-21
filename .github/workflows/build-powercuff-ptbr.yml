@@ -1,0 +1,103 @@
+name: Publicar Powercuff PT-BR (Dopamine rootless)
+
+on:
+  push:
+    branches:
+      - powercuff-ptbr-download
+    paths:
+      - '.github/workflows/build-powercuff-ptbr.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar e verificar binário rootless original
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --output original.deb             https://raw.githubusercontent.com/TweakHub/TweakHub.github.io/main/debs/com.rpetrich.powercuff_0.1_iphoneos-arm64.deb
+          echo "a8f89348b7dd10bdcbb10a5b56f679e74be54d7304e4b7d481764f3863dcb888  original.deb" | sha256sum -c -
+          test "$(dpkg-deb -f original.deb Architecture)" = "iphoneos-arm64"
+
+      - name: Traduzir preferências sem alterar o tweak
+        run: |
+          set -euo pipefail
+          mkdir -p work
+          dpkg-deb -R original.deb work
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import plistlib
+          import re
+
+          root = Path("work")
+          lib = root / "var/jb/Library/MobileSubstrate/DynamicLibraries/Powercuff.dylib"
+          assert lib.is_file(), "Binário do tweak ausente"
+          sha = hashlib.sha256(lib.read_bytes()).hexdigest()
+          assert sha == "e9b6773e254143d32b82f98634063573863629f0da7a2c228b1bebdff8a9fb68", "Binário do tweak diferente do original"
+
+          pref = root / "var/jb/Library/PreferenceLoader/Preferences/Powercuff/Powercuff.plist"
+          p = plistlib.loads(pref.read_bytes())
+          items = p["items"]
+          assert len(items) == 10, "Estrutura de configurações desconhecida"
+          power = next(x for x in items if x.get("key") == "PowerMode")
+          assert power["validValues"] == [0,1,2,3,4]
+          assert power["validTitles"] == ["None","Nominal","Light","Moderate","Heavy"]
+          power["label"] = "Limitação de desempenho"
+          power["validTitles"] = ["Desativado", "Nominal", "Leve", "Moderado", "Intenso"]
+
+          for x in items:
+              label = x.get("label")
+              footer = x.get("footerText")
+              if x.get("key") == "RequireLowPowerMode":
+                  x["label"] = "Somente no Modo Pouca Energia"
+              if label == "Disable when battery level exceeds":
+                  x["label"] = "Desativar acima deste nível (%)"
+              if footer == "Disable at any level when connecting charger":
+                  x["footerText"] = "Desativa a limitação ao conectar o carregador"
+              if x.get("key") == "autoDisableWhenPluggedIn":
+                  x["label"] = "Desativar quando conectado ao carregador"
+              if footer == "Allow discretionary tasks when on charger and with battery above this level":
+                  x["footerText"] = "Permitir tarefas extras com o aparelho carregando e a bateria acima do nível definido"
+              if footer == "Backlight reduction percentage":
+                  x["footerText"] = "Porcentagem de redução do brilho"
+          pref.write_bytes(plistlib.dumps(p, fmt=plistlib.FMT_BINARY))
+          assert plistlib.loads(pref.read_bytes())["items"][1]["validValues"] == [0,1,2,3,4]
+          assert hashlib.sha256(lib.read_bytes()).hexdigest() == sha
+
+          control = root / "DEBIAN/control"
+          s = control.read_text()
+          assert re.search(r"^Package: com.rpetrich.powercuff$", s, flags=re.M)
+          assert re.search(r"^Architecture: iphoneos-arm64$", s, flags=re.M)
+          s = re.sub(r"^Version: .+$", "Version: 0.1+ptbr1", s, flags=re.M)
+          s = re.sub(r"^Name: .+$", "Name: Powercuff PT-BR", s, flags=re.M)
+          s = re.sub(r"^Description: .+$", "Description: Powercuff com preferências em português brasileiro (Dopamine rootless)", s, flags=re.M)
+          control.write_text(s)
+          PY
+
+      - name: Empacotar e validar DEB
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          dpkg-deb --root-owner-group --build work dist/Powercuff_PTBR_0.1_ptbr1_iphoneos-arm64.deb
+          FILE=dist/Powercuff_PTBR_0.1_ptbr1_iphoneos-arm64.deb
+          test "$(dpkg-deb -f "$FILE" Architecture)" = "iphoneos-arm64"
+          test "$(dpkg-deb -f "$FILE" Version)" = "0.1+ptbr1"
+          dpkg-deb --contents "$FILE" | grep 'var/jb/Library/MobileSubstrate/DynamicLibraries/Powercuff.dylib'
+          sha256sum "$FILE"
+
+      - name: Publicar arquivo de download no GitHub Releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          FILE=dist/Powercuff_PTBR_0.1_ptbr1_iphoneos-arm64.deb
+          TAG=powercuff-ptbr-v0.1
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$FILE" --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$TAG" "$FILE" --repo "$GITHUB_REPOSITORY"               --target "$GITHUB_SHA" --title "Powercuff PT-BR 0.1 (Dopamine rootless)"               --notes "Versão com interface traduzida do Powercuff; contém a biblioteca rootless original, sem alterações. Ainda não testado em iPhone real."
+          fi
