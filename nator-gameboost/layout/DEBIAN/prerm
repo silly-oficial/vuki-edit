@@ -1,0 +1,5 @@
+#!/bin/sh
+if [ -x /bin/launchctl ]; then
+  /bin/launchctl bootout system /var/jb/Library/LaunchDaemons/com.nator.gameboost.plist 2>/dev/null || true
+fi
+exit 0
