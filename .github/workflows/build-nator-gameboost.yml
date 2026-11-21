@@ -42,6 +42,7 @@ jobs:
         working-directory: nator-gameboost
         run: |
           set -euo pipefail
+          brew install dpkg
           DEB=$(find packages -name '*_iphoneos-arm64.deb' | head -1)
           test -n "$DEB"
           dpkg-deb -f "$DEB" Architecture | grep -x iphoneos-arm64
